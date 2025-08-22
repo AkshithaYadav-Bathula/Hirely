@@ -4,22 +4,37 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
   const [loading, setLoading] = useState(false);
   
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get the page user was trying to access
+  // Get the intended destination or default to home
   const from = location.state?.from?.pathname || '/';
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!formData.email || !formData.password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
     setLoading(true);
 
-    const result = await login(email, password);
+    const result = await login(formData.email, formData.password);
     
     if (result.success) {
       toast.success('Login successful!');
@@ -50,41 +65,51 @@ const LoginPage = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {/* Demo Credentials */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="text-sm font-medium text-blue-800 mb-2">Demo Credentials:</h3>
+            <div className="text-xs text-blue-700 space-y-1">
+              <p><strong>Admin:</strong> admin@example.com / admin123</p>
+              <p><strong>Employer:</strong> employer@example.com / emp123</p>
+              <p><strong>Developer:</strong> dev@example.com / dev123</p>
+            </div>
+          </div>
+
           <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Enter your email"
+              />
             </div>
 
+            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Enter your password"
+              />
             </div>
 
             <div>
@@ -98,19 +123,24 @@ const LoginPage = () => {
             </div>
           </form>
 
-          {/* Demo Users */}
-          <div className="mt-6 border-t border-gray-200 pt-6">
-            <div className="text-sm text-gray-600 mb-4">Demo accounts for testing:</div>
-            <div className="grid grid-cols-1 gap-2 text-xs">
-              <div className="bg-blue-50 p-2 rounded">
-                <strong>Admin:</strong> admin@example.com / admin123
+          {/* Additional Links */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
               </div>
-              <div className="bg-green-50 p-2 rounded">
-                <strong>Employer:</strong> employer@example.com / emp123
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Need an account?</span>
               </div>
-              <div className="bg-purple-50 p-2 rounded">
-                <strong>Developer:</strong> dev@example.com / dev123
-              </div>
+            </div>
+
+            <div className="mt-6">
+              <Link
+                to="/register"
+                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Create new account
+              </Link>
             </div>
           </div>
         </div>

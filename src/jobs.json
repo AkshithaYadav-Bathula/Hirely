@@ -12,91 +12,240 @@
         "description": "NewTek Solutions is a leading technology company specializing in web development and digital solutions. We pride ourselves on delivering high-quality products and services to our clients while fostering a collaborative and innovative work environment.",
         "contactEmail": "contact@teksolutions.com",
         "contactPhone": "555-555-5555"
-      }
+      },
+      "employerId": "2",
+      "createdAt": "2024-01-15T10:30:00Z",
+      "status": "active"
+    },
+    {
+      "id": "2",
+      "title": "Frontend Developer",
+      "type": "Remote",
+      "description": "Join our team as a Frontend Developer! We are looking for a motivated individual with a passion for crafting beautiful and functional user interfaces. Experience with React, Vue, or Angular is a plus.",
+      "location": "Remote",
+      "salary": "$60K - $70K",
+      "company": {
+        "name": "Veneer Solutions",
+        "description": "Veneer Solutions is a creative agency specializing in digital design and development. Our team is dedicated to pushing the boundaries of creativity and innovation in every project we undertake.",
+        "contactEmail": "contact@veneer.com",
+        "contactPhone": "555-555-5555"
+      },
+      "employerId": "2",
+      "createdAt": "2024-01-20T14:15:00Z",
+      "status": "active"
+    },
+    {
+      "id": "3",
+      "title": "Full Stack Developer",
+      "type": "Full-Time",
+      "description": "Exciting opportunity for a Full-Stack Developer in bustling Miami, FL. We are seeking a versatile developer with experience in both front-end and back-end technologies. Join our dynamic team and make a significant impact!",
+      "location": "Miami, FL",
+      "salary": "$80K - $90K",
+      "company": {
+        "name": "Dolor Cloud",
+        "description": "Dolor Cloud is a leading cloud computing company that specializes in providing innovative solutions for businesses of all sizes. Join us in shaping the future of cloud technology.",
+        "contactEmail": "contact@dolorcloud.com",
+        "contactPhone": "555-555-5555"
+      },
+      "employerId": "4",
+      "createdAt": "2024-01-25T09:45:00Z",
+      "status": "active"
+    },
+    {
+      "id": "4",
+      "title": "React Front-End Developer",
+      "type": "Part-Time",
+      "description": "Part-time opportunity for a React Front-End Developer in beautiful San Diego, CA. We are looking for a skilled developer to join our team and contribute to exciting projects. Flexible schedule and competitive compensation offered.",
+      "location": "San Diego, CA",
+      "salary": "$90K - $100K",
+      "company": {
+        "name": "Alpha Elite",
+        "description": "Alpha Elite is a dynamic startup specializing in cutting-edge web solutions. We pride ourselves on fostering a collaborative and innovative work environment where creativity thrives.",
+        "contactEmail": "contact@alphaelite.com",
+        "contactPhone": "555-555-5555"
+      },
+      "employerId": "4",
+      "createdAt": "2024-02-01T16:20:00Z",
+      "status": "active"
+    },
+    {
+      "id": "5",
+      "title": "JavaScript Developer",
+      "type": "Full-Time",
+      "description": "Join our team as a JavaScript Developer in the heart of Brooklyn, NY. We are seeking a enthusiastic developer with a strong understanding of JavaScript and modern web technologies. Competitive salary and benefits package available.",
+      "location": "Brooklyn, NY",
+      "salary": "$100K - $125K",
+      "company": {
+        "name": "Browning Technologies",
+        "description": "Browning Technologies is a rapidly growing technology company specializing in e-commerce solutions. We offer a dynamic and collaborative work environment where innovation is encouraged.",
+        "contactEmail": "contact@browningtech.com",
+        "contactPhone": "555-555-5555"
+      },
+      "employerId": "2",
+      "createdAt": "2024-02-05T11:10:00Z",
+      "status": "active"
     },
     {
       "id": "6",
-      "title": "React Native Developer",
+      "title": "Senior Software Engineer",
       "type": "Full-Time",
-      "description": "Join our team as a Front-End Developer in beautiful Portland, OR. We are looking for a skilled and enthusiastic individual to help us create innovative web solutions. Competitive salary and great benefits package available.",
-      "location": "Portland, OR",
-      "salary": "$100K - $110K",
+      "description": "We are looking for a Senior Software Engineer to lead our development team. Must have 5+ years of experience with modern web technologies and team leadership skills.",
+      "location": "Seattle, WA",
+      "salary": "$125K - $150K",
       "company": {
-        "name": "Port Solutions INC",
-        "description": "Port Solutions is a leading technology company specializing in software development and digital marketing. We are committed to providing our clients with cutting-edge solutions and our employees with a supportive and rewarding work environment.",
-        "contactEmail": "contact@ipsumlorem.com",
-        "contactPhone": "555-555-5555"
-      }
+        "name": "Tech Innovations Inc",
+        "description": "Tech Innovations Inc is a Fortune 500 company focused on developing cutting-edge software solutions for enterprise clients worldwide.",
+        "contactEmail": "careers@techinnovations.com",
+        "contactPhone": "555-123-4567"
+      },
+      "employerId": "4",
+      "createdAt": "2024-02-10T13:30:00Z",
+      "status": "active"
+    }
+    ,
+    {
+  "id": "7",
+  "title": "Junior Web Developer",
+  "type": "Internship",
+  "description": "Entry-level role for fresh graduates with basic knowledge of HTML, CSS, and JavaScript.",
+  "location": "Austin, TX",
+  "salary": "$30K - $40K",
+  "company": {
+    "name": "Starter Tech",
+    "description": "A startup helping new developers grow into professional roles.",
+    "contactEmail": "hr@startertech.com",
+    "contactPhone": "555-222-1111"
+  },
+  "employerId": "2",
+  "createdAt": "2024-02-15T10:00:00Z",
+  "status": "active"
+}
+
+  ],
+  "users": [
+    {
+      "id": "1",
+      "email": "admin@example.com",
+      "password": "admin123",
+      "firstName": "Admin",
+      "lastName": "User",
+      "role": "admin",
+      "company": null,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true
     },
     {
-      "id": "b26d",
-      "title": "SR. SAP DEVELOPER",
-      "type": "Internship",
-      "location": "Vijayawada, Krishna, Andhra Pradesh, IND",
-      "description": "We are seeking a motivated SR. SAP Developer Intern to assist in developing, customizing, and maintaining SAP modules. You will work closely with our development team to implement solutions, troubleshoot issues, and optimize system performance.",
-      "salary": "Over $200K",
-      "company": {
-        "name": "TECHNOVA SOLUTIONS",
-        "description": "TechNova Solutions is a global IT services provider specializing in enterprise solutions, digital transformation, and ERP system integration. We help organizations streamline business processes and achieve operational excellence through cutting-edge technologies.",
-        "contactEmail": "careers@technovasolutions.com",
-        "contactPhone": "0000000000"
-      }
+      "id": "2",
+      "email": "employer@example.com",
+      "password": "emp123",
+      "firstName": "John",
+      "lastName": "Employer",
+      "role": "employer",
+      "company": "NewTek Solutions",
+      "createdAt": "2024-01-02T00:00:00Z",
+      "isActive": true
     },
     {
-      "id": "ae4c",
-      "title": "fgdgd",
-      "type": "Full-Time",
-      "location": "dfs",
-      "description": "adga",
-      "salary": "Under $50K",
-      "company": {
-        "name": "agasf",
-        "description": "afdasf",
-        "contactEmail": "akshithayadavbathula27@gmai.c",
-        "contactPhone": "afadsf"
-      }
+      "id": "3",
+      "email": "dev@example.com",
+      "password": "dev123",
+      "firstName": "Jane",
+      "lastName": "Developer",
+      "role": "developer",
+      "company": null,
+      "createdAt": "2024-01-03T00:00:00Z",
+      "isActive": true
     },
     {
-      "id": "e453",
-      "title": "abc dev",
-      "type": "Full-Time",
-      "location": "abc",
-      "description": "abc",
-      "salary": "Under $50K",
-      "company": {
-        "name": "abc",
-        "description": "abc",
-        "contactEmail": "akshitha@vrsec.in",
-        "contactPhone": ""
-      }
+      "id": "4",
+      "email": "employer2@example.com",
+      "password": "emp456",
+      "firstName": "Sarah",
+      "lastName": "Wilson",
+      "role": "employer",
+      "company": "Tech Innovations Inc",
+      "createdAt": "2024-01-04T00:00:00Z",
+      "isActive": true
     },
     {
-      "id": "829c",
-      "title": "test",
-      "type": "Full-Time",
-      "location": "test",
-      "description": "test",
-      "salary": "Under $50K",
-      "company": {
-        "name": "test",
-        "description": "test",
-        "contactEmail": "test@a.in",
-        "contactPhone": ""
-      }
+      "id": "5",
+      "email": "dev2@example.com",
+      "password": "dev456",
+      "firstName": "Mike",
+      "lastName": "Johnson",
+      "role": "developer",
+      "company": null,
+      "createdAt": "2024-01-05T00:00:00Z",
+      "isActive": true
     },
     {
-      "id": "84fb",
-      "title": "Beautiful Apartment",
-      "type": "Full-Time",
-      "location": "Vijayawada, Krishna, Andhra Pradesh, IND",
-      "description": "Test",
-      "salary": "$125K - 150K",
-      "company": {
-        "name": "Test",
-        "description": "Test",
-        "contactEmail": "akshitha@gmail.com",
-        "contactPhone": "9490162472"
-      }
+      "id": "1755875988099",
+      "email": "akshithayadavbathula27@gmail.com",
+      "password": "Akshitha",
+      "firstName": "AKSHITHA YADAV",
+      "lastName": "BATHULA",
+      "role": "developer",
+      "company": null,
+      "createdAt": "2025-08-22T15:19:48.099Z",
+      "isActive": true
+    }
+  ],
+  "applications": [
+    {
+      "id": "1",
+      "jobId": "1",
+      "developerId": "3",
+      "status": "pending",
+      "appliedAt": "2024-02-01T10:00:00Z",
+      "coverLetter": "I am very interested in this position and believe my skills align well with your requirements.",
+      "resume": "resume_jane_developer.pdf"
+    },
+    {
+      "id": "2",
+      "jobId": "2",
+      "developerId": "3",
+      "status": "reviewed",
+      "appliedAt": "2024-02-03T14:30:00Z",
+      "coverLetter": "I would love to join your remote team and contribute to your projects.",
+      "resume": "resume_jane_developer.pdf"
+    },
+    {
+      "id": "3",
+      "jobId": "3",
+      "developerId": "5",
+      "status": "accepted",
+      "appliedAt": "2024-02-05T09:15:00Z",
+      "coverLetter": "I'm excited about the Full Stack Developer opportunity and ready to relocate to Miami.",
+      "resume": "resume_mike_johnson.pdf"
+    },
+    {
+      "id": "4",
+      "jobId": "1",
+      "developerId": "5",
+      "status": "rejected",
+      "appliedAt": "2024-02-07T16:45:00Z",
+      "coverLetter": "I have extensive React experience and would like to join your Boston team.",
+      "resume": "resume_mike_johnson.pdf"
+    }
+  ],
+  "savedJobs": [
+    {
+      "id": "1",
+      "jobId": "4",
+      "developerId": "3",
+      "savedAt": "2024-02-08T12:00:00Z"
+    },
+    {
+      "id": "2",
+      "jobId": "5",
+      "developerId": "3",
+      "savedAt": "2024-02-09T15:30:00Z"
+    },
+    {
+      "id": "3",
+      "jobId": "6",
+      "developerId": "5",
+      "savedAt": "2024-02-10T11:20:00Z"
     }
   ]
 }

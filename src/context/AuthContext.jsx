@@ -10,69 +10,53 @@ export const useAuth = () => {
   return context;
 };
 
-// Mock users database (in real app, this would be in backend)
-const MOCK_USERS = [
-  {
-    id: '1',
-    email: 'admin@example.com',
-    password: 'admin123',
-    firstName: 'Admin',
-    lastName: 'User',
-    role: 'admin',
-    company: null
-  },
-  {
-    id: '2',
-    email: 'employer@example.com',
-    password: 'emp123',
-    firstName: 'John',
-    lastName: 'Employer',
-    role: 'employer',
-    company: 'Tech Corp'
-  },
-  {
-    id: '3',
-    email: 'dev@example.com',
-    password: 'dev123',
-    firstName: 'Jane',
-    lastName: 'Developer',
-    role: 'developer',
-    company: null
-  }
-];
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Check if user is logged in on app load
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    const checkAuth = async () => {
+      try {
+        // In a real app, you'd check with the server using a token
+        // For now, we'll check if there's a stored user session
+        const savedUser = sessionStorage.getItem('currentUser');
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
+          // Verify user still exists in database
+          const response = await fetch(`/api/users/${userData.id}`);
+          if (response.ok) {
+            const user = await response.json();
+            setUser(user);
+          } else {
+            // User no longer exists, clear session
+            sessionStorage.removeItem('currentUser');
+          }
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        sessionStorage.removeItem('currentUser');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
   }, []);
-
-  // Get registered users from localStorage
-  const getRegisteredUsers = () => {
-    const users = localStorage.getItem('registeredUsers');
-    return users ? JSON.parse(users) : MOCK_USERS;
-  };
-
-  // Save registered users to localStorage
-  const saveRegisteredUsers = (users) => {
-    localStorage.setItem('registeredUsers', JSON.stringify(users));
-  };
 
   // Login function
   const login = async (email, password) => {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setLoading(true);
       
-      const users = getRegisteredUsers();
-      const foundUser = users.find(u => u.email === email && u.password === password);
+      // Fetch all users to find matching credentials
+      const response = await fetch('/api/users');
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+      
+      const users = await response.json();
+      const foundUser = users.find(u => u.email === email && u.password === password && u.isActive);
       
       if (foundUser) {
         // Don't store password in user object
@@ -80,25 +64,28 @@ export const AuthProvider = ({ children }) => {
         delete userWithoutPassword.password;
         
         setUser(userWithoutPassword);
-        localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+        sessionStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
         return { success: true };
       } else {
         return { success: false, error: 'Invalid email or password' };
       }
     } catch (error) {
+      console.error('Login error:', error);
       return { success: false, error: 'Login failed. Please try again.' };
+    } finally {
+      setLoading(false);
     }
   };
 
   // Register function
   const register = async (userData) => {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const users = getRegisteredUsers();
+      setLoading(true);
       
       // Check if user already exists
+      const response = await fetch('/api/users');
+      const users = await response.json();
+      
       const existingUser = users.find(u => u.email === userData.email);
       if (existingUser) {
         return { success: false, error: 'User with this email already exists' };
@@ -113,30 +100,43 @@ export const AuthProvider = ({ children }) => {
         lastName: userData.lastName,
         role: userData.role,
         company: userData.company || null,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        isActive: true
       };
 
-      // Add to users list
-      const updatedUsers = [...users, newUser];
-      saveRegisteredUsers(updatedUsers);
+      // Add user to database
+      const createResponse = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newUser),
+      });
+
+      if (!createResponse.ok) {
+        throw new Error('Failed to create user');
+      }
 
       // Login the user immediately after registration
       const userWithoutPassword = { ...newUser };
       delete userWithoutPassword.password;
       
       setUser(userWithoutPassword);
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+      sessionStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
       
       return { success: true };
     } catch (error) {
+      console.error('Registration error:', error);
       return { success: false, error: 'Registration failed. Please try again.' };
+    } finally {
+      setLoading(false);
     }
   };
 
   // Logout function
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('currentUser');
   };
 
   // Check if user has specific role
@@ -154,36 +154,51 @@ export const AuthProvider = ({ children }) => {
     return user !== null;
   };
 
-  // Get all registered users (admin only)
-  const getAllUsers = () => {
+  // Get all users (admin only)
+  const getAllUsers = async () => {
     if (!hasRole('admin')) return [];
-    return getRegisteredUsers().map(user => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    });
+    
+    try {
+      const response = await fetch('/api/users');
+      if (response.ok) {
+        const users = await response.json();
+        return users.map(user => {
+          const { password, ...userWithoutPassword } = user;
+          return userWithoutPassword;
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    }
+    
+    return [];
   };
 
   // Update user profile
   const updateProfile = async (updatedData) => {
     try {
-      const users = getRegisteredUsers();
-      const userIndex = users.findIndex(u => u.id === user.id);
-      
-      if (userIndex !== -1) {
-        users[userIndex] = { ...users[userIndex], ...updatedData };
-        saveRegisteredUsers(users);
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...user, ...updatedData }),
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        const userWithoutPassword = { ...updatedUser };
+        delete userWithoutPassword.password;
         
-        // Update current user state
-        const updatedUser = { ...users[userIndex] };
-        delete updatedUser.password;
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(userWithoutPassword);
+        sessionStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
         
         return { success: true };
+      } else {
+        throw new Error('Failed to update profile');
       }
-      
-      return { success: false, error: 'User not found' };
     } catch (error) {
+      console.error('Profile update error:', error);
       return { success: false, error: 'Profile update failed' };
     }
   };
