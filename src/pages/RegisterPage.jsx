@@ -45,7 +45,7 @@ const RegisterPage = () => {
       return;
     }
     e.preventDefault();
-    
+
     // Validation
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
@@ -65,15 +65,33 @@ const RegisterPage = () => {
 
     setLoading(true);
 
+    // Duplicate email check
+    try {
+      const res = await fetch('/src/jobs.json');
+      const data = await res.json();
+      const users = data.users || [];
+      const emailExists = users.some(u => u.email.toLowerCase() === formData.email.toLowerCase());
+      if (emailExists) {
+        setEmailError('Email already exists. Please use a different email.');
+        toast.error('Email already exists. Please use a different email.');
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      toast.error('Could not validate email. Please try again.');
+      setLoading(false);
+      return;
+    }
+
     const result = await register(formData);
-    
+
     if (result.success) {
       toast.success('Registration successful!');
       navigate('/');
     } else {
       toast.error(result.error || 'Registration failed');
     }
-    
+
     setLoading(false);
   };
 
