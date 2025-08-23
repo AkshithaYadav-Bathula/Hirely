@@ -10,16 +10,16 @@ const HomepageFilters = () => {
 
   const salaryRanges = [
     { value: '', label: 'Any Salary' },
-    { value: 'Under $50K', label: 'Under $50K' },
-    { value: '$50K - 60K', label: '$50K - $60K' },
-    { value: '$60K - 70K', label: '$60K - $70K' },
-    { value: '$70K - 80K', label: '$70K - $80K' },
-    { value: '$80K - 90K', label: '$80K - $90K' },
-    { value: '$90K - 100K', label: '$90K - $100K' },
-    { value: '$100K - 125K', label: '$100K - $125K' },
-    { value: '$125K - 150K', label: '$125K - $150K' },
-    { value: '$150K - 175K', label: '$150K - $175K' },
-    { value: '$175K - 200K', label: '$175K - $200K' },
+    { value: 'Under $50K', label: 'Under 50K' },
+    { value: '$50K - $60K', label: '$50K - $60K' },
+    { value: '$60K - $70K', label: '$60K - $70K' },
+    { value: '$70K - $80K', label: '$70K - $80K' },
+    { value: '$80K - $90K', label: '$80K - $90K' },
+    { value: '$90K - $100K', label: '$90K - $100K' },
+    { value: '$100K - $125K', label: '$100K - $125K' },
+    { value: '$125K - $150K', label: '$125K - $150K' },
+    { value: '$150K - $175K', label: '$150K - $175K' },
+    { value: '$175K - $200K', label: '$175K - $200K' },
     { value: 'Over $200K', label: 'Over $200K' }
   ];
 
