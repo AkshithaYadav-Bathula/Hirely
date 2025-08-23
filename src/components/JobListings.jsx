@@ -491,31 +491,40 @@ const JobListings = ({ isHome = false }) => {
     fetchJobs();
   }, [isHome]);
 
-  // Parse salary filter ranges
-  const parseSalaryRange = (range) => {
-    if (range === "Under $50K") return [0, 49999];
-    if (range === "Over $200K") return [200001, Infinity];
+ const matchSalaryFilter = (filterSalary, jobSalary) => {
+  if (!filterSalary || !jobSalary) return true;
 
-    const match = range.match(/\$(\d+)K\s*[-–]\s*\$(\d+)K/);
-    if (match) {
-      const min = parseInt(match[1]) * 1000;
-      const max = parseInt(match[2]) * 1000;
-      return [min, max];
-    }
+  let min = 0, max = Infinity;
 
-    return [0, Infinity];
-  };
+  // Parse filter range
+  if (filterSalary.toLowerCase().includes("under")) {
+    max = parseInt(filterSalary.replace(/\D/g, ""), 10) * 1000;
+  } else if (filterSalary.toLowerCase().includes("over")) {
+    min = parseInt(filterSalary.replace(/\D/g, ""), 10) * 1000;
+  } else if (filterSalary.includes("-")) {
+    [min, max] = filterSalary
+      .split("-")
+      .map((s) => parseInt(s.replace(/\D/g, ""), 10) * 1000);
+  }
 
-  // Salary filter check
-  const salaryMatches = (jobSalary, filterSalary) => {
-    if (!filterSalary) return true;
+  // Parse job salary
+  let jobMin = 0, jobMax = 0;
+  if (jobSalary.toLowerCase().includes("under")) {
+    jobMin = 0;
+    jobMax = parseInt(jobSalary.replace(/\D/g, ""), 10) * 1000;
+  } else if (jobSalary.toLowerCase().includes("over")) {
+    jobMin = parseInt(jobSalary.replace(/\D/g, ""), 10) * 1000;
+    jobMax = Infinity;
+  } else if (jobSalary.includes("-")) {
+    [jobMin, jobMax] = jobSalary
+      .split("-")
+      .map((s) => parseInt(s.replace(/\D/g, ""), 10) * 1000);
+  }
 
-    const [filterMin, filterMax] = parseSalaryRange(filterSalary);
-    const [jobMin, jobMax] = parseSalaryRange(jobSalary);
+  // ✅ Inclusive overlap
+  return jobMin <= max && jobMax >= min;
+};
 
-    // Inclusive range check
-    return jobMin >= filterMin && jobMax <= filterMax;
-  };
 
   // Filter jobs based on URL parameters (from homepage filters)
   useEffect(() => {
@@ -539,9 +548,8 @@ const JobListings = ({ isHome = false }) => {
 
       // Salary filter
       if (salary) {
-        filtered = filtered.filter((job) => salaryMatches(job.salary, salary));
-      }
-
+  filtered = filtered.filter((job) => matchSalaryFilter(salary, job.salary));
+ }
       // Location filter
       if (locationFilter) {
         filtered = filtered.filter((job) =>

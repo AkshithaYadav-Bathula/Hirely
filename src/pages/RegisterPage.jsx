@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import SkillsDropdown from '../components/SkillsDropdown';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -11,7 +12,8 @@ const RegisterPage = () => {
     password: '',
     confirmPassword: '',
     role: 'developer', // default role
-    company: ''
+    company: '',
+    skills: [] // New field for developer skills
   });
   const [loading, setLoading] = useState(false);
   
@@ -22,6 +24,13 @@ const RegisterPage = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSkillsChange = (skills) => {
+    setFormData({
+      ...formData,
+      skills: skills
     });
   };
 
@@ -36,6 +45,12 @@ const RegisterPage = () => {
 
     if (formData.password.length < 6) {
       toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    // For developers, require at least one skill
+    if (formData.role === 'developer' && formData.skills.length === 0) {
+      toast.error('Please select at least one skill');
       return;
     }
 
@@ -154,6 +169,15 @@ const RegisterPage = () => {
                   className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
+            )}
+
+            {/* Skills (only for developers) */}
+            {formData.role === 'developer' && (
+              <SkillsDropdown
+                selectedSkills={formData.skills}
+                onSkillsChange={handleSkillsChange}
+                maxSkills={5}
+              />
             )}
 
             {/* Password */}
