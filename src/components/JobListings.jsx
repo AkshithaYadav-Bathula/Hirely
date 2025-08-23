@@ -473,6 +473,25 @@ const JobListings = ({ isHome = false }) => {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
+  const parseSalaryRange = (salaryStr) => {
+    if (!salaryStr) return [null, null];
+    if (salaryStr.startsWith('Under')) {
+      const max = parseInt(salaryStr.replace(/[^0-9]/g, '')) * 1000;
+      return [0, max];
+    }
+    if (salaryStr.startsWith('Over')) {
+      const min = parseInt(salaryStr.replace(/[^0-9]/g, '')) * 1000;
+      return [min, Infinity];
+    }
+    const match = salaryStr.match(/\$?([\d,]+)K\s*-\s*\$?([\d,]+)K/);
+    if (match) {
+      const min = parseInt(match[1].replace(/,/g, '')) * 1000;
+      const max = parseInt(match[2].replace(/,/g, '')) * 1000;
+      return [min, max];
+    }
+    return [null, null];
+  };
+
   useEffect(() => {
     const fetchJobs = async () => {
       const apiUrl = isHome ? '/api/jobs?_limit=3' : '/api/jobs';
@@ -491,31 +510,40 @@ const JobListings = ({ isHome = false }) => {
     fetchJobs();
   }, [isHome]);
 
-  // Parse salary filter ranges
-  const parseSalaryRange = (range) => {
-    if (range === "Under $50K") return [0, 49999];
-    if (range === "Over $200K") return [200001, Infinity];
+ const matchSalaryFilter = (filterSalary, jobSalary) => {
+  if (!filterSalary || !jobSalary) return true;
 
-    const match = range.match(/\$(\d+)K\s*[-–]\s*\$(\d+)K/);
-    if (match) {
-      const min = parseInt(match[1]) * 1000;
-      const max = parseInt(match[2]) * 1000;
-      return [min, max];
-    }
+  let min = 0, max = Infinity;
 
-    return [0, Infinity];
-  };
+  // Parse filter range
+  if (filterSalary.toLowerCase().includes("under")) {
+    max = parseInt(filterSalary.replace(/\D/g, ""), 10) * 1000;
+  } else if (filterSalary.toLowerCase().includes("over")) {
+    min = parseInt(filterSalary.replace(/\D/g, ""), 10) * 1000;
+  } else if (filterSalary.includes("-")) {
+    [min, max] = filterSalary
+      .split("-")
+      .map((s) => parseInt(s.replace(/\D/g, ""), 10) * 1000);
+  }
 
-  // Salary filter check
-  const salaryMatches = (jobSalary, filterSalary) => {
-    if (!filterSalary) return true;
+  // Parse job salary
+  let jobMin = 0, jobMax = 0;
+  if (jobSalary.toLowerCase().includes("under")) {
+    jobMin = 0;
+    jobMax = parseInt(jobSalary.replace(/\D/g, ""), 10) * 1000;
+  } else if (jobSalary.toLowerCase().includes("over")) {
+    jobMin = parseInt(jobSalary.replace(/\D/g, ""), 10) * 1000;
+    jobMax = Infinity;
+  } else if (jobSalary.includes("-")) {
+    [jobMin, jobMax] = jobSalary
+      .split("-")
+      .map((s) => parseInt(s.replace(/\D/g, ""), 10) * 1000);
+  }
 
-    const [filterMin, filterMax] = parseSalaryRange(filterSalary);
-    const [jobMin, jobMax] = parseSalaryRange(jobSalary);
+  // Inclusive overlap
+  return jobMin <= max && jobMax >= min;
+};
 
-    // Inclusive range check
-    return jobMin >= filterMin && jobMax <= filterMax;
-  };
 
   // Filter jobs based on URL parameters (from homepage filters)
   useEffect(() => {
@@ -527,8 +555,13 @@ const JobListings = ({ isHome = false }) => {
 
       let filtered = jobs;
 
-      // Keyword filter
+      // Apply keyword filter
+      // Keep only jobs where keyword matches in title, company name, description, or type
       if (keyword) {
+        // Array.filter() is a built-in method that loops through an array and
+        // returns only the elements that pass a test (true condition).
+        // String.toLowerCase() makes text lowercase so search is case-insensitive.
+        // String.includes() checks if one string is found inside another (returns true/false).
         filtered = filtered.filter((job) =>
           job.title.toLowerCase().includes(keyword.toLowerCase()) ||
           job.company.name.toLowerCase().includes(keyword.toLowerCase()) ||
@@ -537,10 +570,23 @@ const JobListings = ({ isHome = false }) => {
         );
       }
 
-      // Salary filter
+      // Apply salary filter
       if (salary) {
-        filtered = filtered.filter((job) => salaryMatches(job.salary, salary));
+        const [filterMin, filterMax] = parseSalaryRange(salary);
+        filtered = filtered.filter((job) => {
+          const [jobMin, jobMax] = parseSalaryRange(job.salary);
+          // Check for overlap between filter and job salary ranges
+          return (
+            filterMin !== null &&
+            filterMax !== null &&
+            jobMin !== null &&
+            jobMax !== null &&
+            jobMax >= filterMin &&
+            jobMin <= filterMax
+          );
+        });
       }
+      // ...existing code...
 
       // Location filter
       if (locationFilter) {
@@ -582,22 +628,26 @@ const JobListings = ({ isHome = false }) => {
               <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6 max-w-4xl mx-auto">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="text-sm font-medium text-gray-600">Active Filters:</span>
+
                   {filters.keyword && (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                       Keyword: {filters.keyword}
                     </span>
                   )}
+
                   {filters.salary && (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       Salary: {filters.salary}
                     </span>
                   )}
+
                   {filters.location && (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                       Location: {filters.location}
                     </span>
                   )}
                 </div>
+
                 <p className="text-sm text-gray-600">
                   Found {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}
                   {hasFilters && ' matching your criteria'}
