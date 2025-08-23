@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import SkillsDropdown from '../components/SkillsDropdown';
+import { validateEmail } from '../utils/validateEmail';
 
 const RegisterPage = () => {
+  const [emailError, setEmailError] = useState('');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -21,6 +23,9 @@ const RegisterPage = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
+    if (e.target.name === 'email') {
+      setEmailError('');
+    }
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -35,6 +40,10 @@ const RegisterPage = () => {
   };
 
   const handleSubmit = async (e) => {
+    if (!validateEmail(formData.email)) {
+      setEmailError('Please enter a valid email address.');
+      return;
+    }
     e.preventDefault();
     
     // Validation
@@ -132,8 +141,26 @@ const RegisterPage = () => {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                onBlur={() => {
+                  if (!validateEmail(formData.email)) {
+                    setEmailError('Please enter a valid email address.');
+                  } else {
+                    setEmailError('');
+                  }
+                }}
+                className={`mt-1 appearance-none block w-full px-3 py-2 border ${emailError ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                placeholder="Enter your email"
               />
+              {emailError && (
+                <div className='mt-1 text-red-600 text-sm flex items-center'>
+                  {emailError}
+                </div>
+              )}
+              {emailError && (
+                <div className='mt-1 text-red-600 text-sm flex items-center'>
+                  {emailError}
+                </div>
+              )}
             </div>
 
             {/* Role */}

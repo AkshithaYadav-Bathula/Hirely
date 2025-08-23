@@ -131,7 +131,7 @@
 //                 <option value='$80K - 90K'>$80K - $90K</option>
 //                 <option value='$90K - 100K'>$90K - $100K</option>
 //                 <option value='$100K - 125K'>$100K - $125K</option>
-//                 <option value='$125K - 150K'>$125K - $150K</option>
+//                 <option value='$125K - 150K'>$125K - $125K</option>
 //                 <option value='$150K - 175K'>$150K - $175K</option>
 //                 <option value='$175K - 200K'>$175K - $200K</option>
 //                 <option value='Over $200K'>Over $200K</option>
@@ -246,6 +246,7 @@
 import { useState } from 'react';
 import { useParams, useLoaderData, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { validateEmail } from '../utils/validateEmail';
 
 const EditJobPage = ({ updateJobSubmit }) => {
   const job = useLoaderData();
@@ -264,25 +265,6 @@ const EditJobPage = ({ updateJobSubmit }) => {
 
   const navigate = useNavigate();
   const { id } = useParams();
-
-  // Email validation function
-  function validateEmail(email) {
-    if (!email.trim()) return false; // Required field
-    
-    // Basic syntax check
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) return false;
-    if (email.includes('..')) return false; // No consecutive periods
-    if (email.startsWith('.') || email.endsWith('.')) return false;
-    if (email.includes(' ')) return false;
-    if (email.length > 254) return false; // Max email length
-    
-    // Check local part (before @) length
-    const localPart = email.split('@')[0];
-    if (localPart.length > 64) return false;
-    
-    return true;
-  }
 
   // Handle email blur (when user clicks away from email field)
   const handleEmailBlur = () => {

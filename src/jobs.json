@@ -269,6 +269,23 @@
           "name": "React"
         }
       ]
+    },
+    {
+      "id": "95dd",
+      "title": "Senior Java developer",
+      "type": "Full-Time",
+      "location": "Bangalore",
+      "description": "Understand java ",
+      "salary": "$125K - 150K",
+      "company": {
+        "name": "NewTek Solutions",
+        "description": "",
+        "contactEmail": "abb@gmail.com",
+        "contactPhone": ""
+      },
+      "employerId": "2",
+      "createdAt": "2025-08-23T03:37:02.066Z",
+      "status": "active"
     }
   ],
   "users": [

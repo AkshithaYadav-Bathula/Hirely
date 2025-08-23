@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
+import { validateEmail } from '../utils/validateEmail';
 
 const JobPage = ({ deleteJob, applyToJob }) => {
   const navigate = useNavigate();

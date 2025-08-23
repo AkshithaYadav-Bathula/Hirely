@@ -1,4 +1,5 @@
 import JobListings from '../components/JobListings';
+import { validateEmail } from '../utils/validateEmail';
 
 const JobsPage = () => {
   return (
@@ -7,4 +8,4 @@ const JobsPage = () => {
     </section>
   );
 };
-export default JobsPage; 
+export default JobsPage;

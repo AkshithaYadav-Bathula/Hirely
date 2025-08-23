@@ -424,10 +424,10 @@
 //                 <option value='$70K - $80K'>$70K - $80K</option>
 //                 <option value='$80K - $90K'>$80K - $90K</option>
 //                 <option value='$90K - $100K'>$90K - $100K</option>
-//                 <option value='$100K - $125K'>$100K - $125K</option>
-//                 <option value='$125K - $150K'>$125K - $150K</option>
-//                 <option value='$150K - $175K'>$150K - $175K</option>
-//                 <option value='$175K - $200K'>$175K - $200K</option>
+//                 <option value='$100K - 125K'>$100K - $125K</option>
+//                 <option value='$125K - 150K'>$125K - $150K</option>
+//                 <option value='$150K - 175K'>$150K - $175K</option>
+//                 <option value='$175K - 200K'>$175K - $200K</option>
 //                 <option value='Over $200K'>Over $200K</option>
 //               </select>
 //             </div>
@@ -508,7 +508,6 @@
 //                 <p className='text-red-500 text-sm mt-1'>{emailError}</p>
 //               )}
 //             </div>
-            
 //             <div className='mb-4'>
 //               <label
 //                 htmlFor='contact_phone'
@@ -529,11 +528,10 @@
 
 //             <div>
 //               <button
-//                 className='bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline disabled:opacity-50'
+//                 className='bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline'
 //                 type='submit'
-//                 disabled={loading}
 //               >
-//                 {loading ? 'Adding Job...' : 'Add Job'}
+//                 Add Job
 //               </button>
 //             </div>
 //           </form>
@@ -544,10 +542,11 @@
 // };
 
 // export default AddJobPage;
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
+import { validateEmail } from '../utils/validateEmail';
 
 const AddJobPage = ({ addJobSubmit }) => {
   const [title, setTitle] = useState('');
@@ -572,25 +571,6 @@ const AddJobPage = ({ addJobSubmit }) => {
     }
   }, [user]);
 
-  // Email validation function
-  function validateEmail(email) {
-    if (!email.trim()) return true; // Empty is allowed, required validation handles it
-    
-    // Basic syntax check
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) return false;
-    if (email.includes('..')) return false; // No consecutive periods
-    if (email.startsWith('.') || email.endsWith('.')) return false;
-    if (email.includes(' ')) return false;
-    if (email.length > 254) return false; // Max email length
-    
-    // Check local part (before @) length
-    const localPart = email.split('@')[0];
-    if (localPart.length > 64) return false;
-    
-    return true;
-  }
-
   // Handle email blur (when user clicks away from email field)
   const handleEmailBlur = () => {
     if (contactEmail && !validateEmail(contactEmail)) {
@@ -599,6 +579,23 @@ const AddJobPage = ({ addJobSubmit }) => {
       setEmailError('');
     }
   };
+
+  // Validate email when clicking anywhere on the page (except the email field)
+  useEffect(() => {
+    const handleClick = (e) => {
+      // If the email field is focused, do nothing
+      const emailInput = document.getElementById('contact_email');
+      if (emailInput && document.activeElement === emailInput) return;
+      // If email is not valid, show error
+      if (contactEmail && !validateEmail(contactEmail)) {
+        setEmailError('Please enter a valid email address.');
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => {
+      document.removeEventListener('click', handleClick);
+    };
+  }, [contactEmail]);
 
   // Handle email change
   const handleEmailChange = (e) => {
@@ -738,8 +735,8 @@ const AddJobPage = ({ addJobSubmit }) => {
                 <option value='$70K - $80K'>$70K - $80K</option>
                 <option value='$80K - $90K'>$80K - $90K</option>
                 <option value='$90K - $100K'>$90K - $100K</option>
-                <option value='$100K - $125K'>$100K - $125K</option>
-                <option value='$125K - $150K'>$125K - $150K</option>
+                <option value='$100K - 125K'>$100K - $125K</option>
+                <option value='$125K - 150K'>$125K - $150K</option>
                 <option value='$150K - $175K'>$150K - $175K</option>
                 <option value='$175K - $200K'>$175K - $200K</option>
                 <option value='Over $200K'>Over $200K</option>
