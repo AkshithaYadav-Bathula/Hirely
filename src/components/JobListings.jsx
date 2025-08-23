@@ -521,7 +521,7 @@ const JobListings = ({ isHome = false }) => {
       .map((s) => parseInt(s.replace(/\D/g, ""), 10) * 1000);
   }
 
-  // ✅ Inclusive overlap
+  // Inclusive overlap
   return jobMin <= max && jobMax >= min;
 };
 

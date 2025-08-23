@@ -7,7 +7,8 @@
 // // // import MainLayout from './layouts/MainLayout';
 // // // import HomePage from './pages/HomePage';
 // // // import JobsPage from './pages/JobsPage';
-// // // import NotFoundPage from './pages/NotFoundPage';
+// import MyJobsPage from './pages/MyJobsPage';
+
 // // // import JobPage, { jobLoader } from './pages/JobPage';
 // // // import AddJobPage from './pages/AddJobPage';
 // // // import EditJobPage from './pages/EditJobPage';
@@ -64,6 +65,7 @@
 // // //           path='/edit-job/:id'
 // // //           element={<EditJobPage updateJobSubmit={updateJob} />}
 // // //           loader={jobLoader}
+        
 // // //         />
 // // //         <Route
 // // //           path='/jobs/:id'
@@ -89,7 +91,7 @@
 // // import MainLayout from './layouts/MainLayout';
 // // import HomePage from './pages/HomePage';
 // // import JobsPage from './pages/JobsPage';
-// // import NotFoundPage from './pages/NotFoundPage';
+// import MyJobsPage from './pages/MyJobsPage';
 // // import UnauthorizedPage from './pages/UnauthorizedPage';
 // // import LoginPage from './pages/LoginPage';
 // // import RegisterPage from './pages/RegisterPage';
@@ -462,8 +464,10 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import JobPage, { jobLoader } from './pages/JobPage';
 import AddJobPage from './pages/AddJobPage';
+import MyJobsPage from './pages/MyJobsPage';
 import EditJobPage from './pages/EditJobPage';
 import MyApplicationsPage from './pages/MyApplicationsPage';
+import MyJobApplicantsPage from './pages/MyJobApplicantsPage';
 
 const App = () => {
   // Add New Job — called by AddJobPage via prop addJobSubmit
@@ -640,7 +644,14 @@ const App = () => {
           }
           loader={jobLoader}
         />
-
+<Route
+          path="/my-job/:id"
+          element={
+            <ProtectedRoute roles={['employer']}>
+              <MyJobApplicantsPage />
+            </ProtectedRoute>
+          }
+        />
         {/* Protected Routes - Developer Only */}
         <Route
           path='/my-applications'
@@ -664,7 +675,7 @@ const App = () => {
           path='/my-jobs'
           element={
             <ProtectedRoute roles={['employer']}>
-              <div>My Posted Jobs Page</div>
+               <MyJobsPage />
             </ProtectedRoute>
           }
         />
