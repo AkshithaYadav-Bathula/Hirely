@@ -463,6 +463,7 @@ import RegisterPage from './pages/RegisterPage';
 import JobPage, { jobLoader } from './pages/JobPage';
 import AddJobPage from './pages/AddJobPage';
 import EditJobPage from './pages/EditJobPage';
+import MyApplicationsPage from './pages/MyApplicationsPage';
 
 const App = () => {
   // Add New Job — called by AddJobPage via prop addJobSubmit
@@ -610,8 +611,8 @@ const App = () => {
           path='/jobs/:id' 
           element={
             <JobPage 
-              deleteJob={deleteJob} 
               applyToJob={applyToJob}
+              deleteJob={deleteJob} 
               saveJob={saveJob}
             />
           } 
@@ -645,7 +646,7 @@ const App = () => {
           path='/my-applications'
           element={
             <ProtectedRoute roles={['developer']}>
-              <div>My Applications Page</div>
+              <MyApplicationsPage />
             </ProtectedRoute>
           }
         />

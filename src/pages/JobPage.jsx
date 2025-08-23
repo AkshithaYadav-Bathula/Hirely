@@ -3,12 +3,15 @@ import { FaArrowLeft, FaMapMarker } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
 
-const JobPage = ({ deleteJob }) => {
+const JobPage = ({ deleteJob, applyToJob }) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const job = useLoaderData();
   const { user, hasAnyRole } = useAuth();
+  const [coverLetter, setCoverLetter] = useState('');
+  const [applied, setApplied] = useState(false);
 
   // Check if user can manage this job
   const canManageJob = () => {
@@ -36,6 +39,16 @@ const JobPage = ({ deleteJob }) => {
     toast.success('Job deleted successfully');
 
     navigate('/jobs');
+  };
+
+  const handleApply = async (e) => {
+    e.preventDefault();
+    await applyToJob(job.id, {
+      developerId: user.id,
+      coverLetter,
+      resume: '', // Add resume upload if needed
+    });
+    setApplied(true);
   };
 
   return (
@@ -126,12 +139,27 @@ const JobPage = ({ deleteJob }) => {
               {user && hasAnyRole(['developer']) && (
                 <div className='bg-white p-6 rounded-lg shadow-md mt-6'>
                   <h3 className='text-xl font-bold mb-6'>Apply for this Job</h3>
-                  <button className='bg-green-500 hover:bg-green-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline'>
-                    Apply Now
-                  </button>
-                  <button className='bg-blue-500 hover:bg-blue-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4'>
-                    Save Job
-                  </button>
+                  {!applied ? (
+                    <form onSubmit={handleApply}>
+                      <textarea
+                        value={coverLetter}
+                        onChange={e => setCoverLetter(e.target.value)}
+                        placeholder="Write your cover letter"
+                        required
+                        className="w-full p-2 border rounded-md"
+                      />
+                      <button
+                        type="submit"
+                        className='bg-green-500 hover:bg-green-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4'
+                      >
+                        Apply Now
+                      </button>
+                    </form>
+                  ) : (
+                    <div className="text-green-600 font-bold">
+                      You have applied to this job.
+                    </div>
+                  )}
                 </div>
               )}
             </aside>

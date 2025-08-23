@@ -413,15 +413,6 @@
   ],
   "applications": [
     {
-      "id": "1",
-      "jobId": "1",
-      "developerId": "3",
-      "status": "pending",
-      "appliedAt": "2024-02-01T10:00:00Z",
-      "coverLetter": "I am very interested in this position and believe my skills align well with your requirements.",
-      "resume": "resume_jane_developer.pdf"
-    },
-    {
       "id": "2",
       "jobId": "2",
       "developerId": "3",
@@ -447,6 +438,15 @@
       "appliedAt": "2024-02-07T16:45:00Z",
       "coverLetter": "I have extensive React experience and would like to join your Boston team.",
       "resume": "resume_mike_johnson.pdf"
+    },
+    {
+      "id": "1755919257065",
+      "jobId": "1",
+      "developerId": "3",
+      "coverLetter": "I am capable",
+      "resume": "",
+      "status": "pending",
+      "appliedAt": "2025-08-23T03:20:57.065Z"
     }
   ],
   "savedJobs": [
