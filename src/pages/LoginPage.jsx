@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import { validateEmail } from '../utils/validateEmail';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const LoginPage = () => {
     password: ''
   });
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
   
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -22,6 +24,9 @@ const LoginPage = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+    if (e.target.name === 'email') {
+      setEmailError('');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -29,6 +34,11 @@ const LoginPage = () => {
     
     if (!formData.email || !formData.password) {
       toast.error('Please fill in all fields');
+      return;
+    }
+    if (!validateEmail(formData.email)) {
+      setEmailError('Please enter a valid email address');
+      toast.error('Please enter a valid email address');
       return;
     }
 
@@ -89,9 +99,21 @@ const LoginPage = () => {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                onBlur={() => {
+                  if (!validateEmail(formData.email)) {
+                    setEmailError('Please enter a valid email address');
+                  } else {
+                    setEmailError('');
+                  }
+                }}
+                className={`mt-1 appearance-none block w-full px-3 py-2 border ${emailError ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
                 placeholder="Enter your email"
               />
+              {emailError && (
+                <div className='mt-1 text-red-600 text-sm flex items-center'>
+                  {emailError}
+                </div>
+              )}
             </div>
 
             {/* Password */}

@@ -1,110 +1,110 @@
-// // import { useState, useEffect } from 'react';
-// // import JobListing from './JobListing';
-// // import Spinner from './Spinner';
-// // import SearchBar from './SearchBar';
+// import { useState, useEffect } from 'react';
+// import JobListing from './JobListing';
+// import Spinner from './Spinner';
+// import SearchBar from './SearchBar';
 
-// // const JobListings = ({ isHome = false }) => {
-// //   const [jobs, setJobs] = useState([]);
-// //   const [filteredJobs, setFilteredJobs] = useState([]);
-// //   const [loading, setLoading] = useState(true);
-// //   const [searchTerm, setSearchTerm] = useState('');
+// const JobListings = ({ isHome = false }) => {
+//   const [jobs, setJobs] = useState([]);
+//   const [filteredJobs, setFilteredJobs] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [searchTerm, setSearchTerm] = useState('');
 
-// //   useEffect(() => {
-// //     const fetchJobs = async () => {
-// //       const apiUrl = isHome ? '/api/jobs?_limit=3' : '/api/jobs';
-// //       try {
-// //         const res = await fetch(apiUrl);
-// //         const data = await res.json();
-// //         setJobs(data);
-// //         setFilteredJobs(data); // Initialize filtered jobs with all jobs
-// //       } catch (error) {
-// //         console.log('Error fetching data', error);
-// //       } finally {
-// //         setLoading(false);
-// //       }
-// //     };
+//   useEffect(() => {
+//     const fetchJobs = async () => {
+//       const apiUrl = isHome ? '/api/jobs?_limit=3' : '/api/jobs';
+//       try {
+//         const res = await fetch(apiUrl);
+//         const data = await res.json();
+//         setJobs(data);
+//         setFilteredJobs(data); // Initialize filtered jobs with all jobs
+//       } catch (error) {
+//         console.log('Error fetching data', error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
 
-// //     fetchJobs();
-// //   }, []);
+//     fetchJobs();
+//   }, []);
 
-// //   // Search functionality
-// //   const handleSearch = (term) => {
-// //     if (!term.trim()) {
-// //       setFilteredJobs(jobs); // Show all jobs if search is empty
-// //     } else {
-// //       const filtered = jobs.filter((job) =>
-// //         job.title.toLowerCase().includes(term.toLowerCase()) ||
-// //         job.company.name.toLowerCase().includes(term.toLowerCase()) ||
-// //         job.location.toLowerCase().includes(term.toLowerCase()) ||
-// //         job.type.toLowerCase().includes(term.toLowerCase()) ||
-// //         job.description.toLowerCase().includes(term.toLowerCase())
-// //       );
-// //       setFilteredJobs(filtered);
-// //     }
-// //   };
+//   // Search functionality
+//   const handleSearch = (term) => {
+//     if (!term.trim()) {
+//       setFilteredJobs(jobs); // Show all jobs if search is empty
+//     } else {
+//       const filtered = jobs.filter((job) =>
+//         job.title.toLowerCase().includes(term.toLowerCase()) ||
+//         job.company.name.toLowerCase().includes(term.toLowerCase()) ||
+//         job.location.toLowerCase().includes(term.toLowerCase()) ||
+//         job.type.toLowerCase().includes(term.toLowerCase()) ||
+//         job.description.toLowerCase().includes(term.toLowerCase())
+//       );
+//       setFilteredJobs(filtered);
+//     }
+//   };
 
-// //   // Update filtered jobs when search term changes
-// //   useEffect(() => {
-// //     handleSearch(searchTerm);
-// //   }, [searchTerm, jobs]);
+//   // Update filtered jobs when search term changes
+//   useEffect(() => {
+//     handleSearch(searchTerm);
+//   }, [searchTerm, jobs]);
 
-// //   return (
-// //     <section className='bg-blue-50 px-4 py-10'>
-// //       <div className='container-xl lg:container m-auto'>
-// //         <h2 className='text-3xl font-bold text-indigo-500 mb-6 text-center'>
-// //           {isHome ? 'Recent Jobs' : 'Browse Jobs'}
-// //         </h2>
+//   return (
+//     <section className='bg-blue-50 px-4 py-10'>
+//       <div className='container-xl lg:container m-auto'>
+//         <h2 className='text-3xl font-bold text-indigo-500 mb-6 text-center'>
+//           {isHome ? 'Recent Jobs' : 'Browse Jobs'}
+//         </h2>
 
-// //         {/* Show search bar only on jobs page, not home page */}
-// //         {!isHome && (
-// //           <SearchBar 
-// //             onSearch={handleSearch}
-// //             searchTerm={searchTerm}
-// //             setSearchTerm={setSearchTerm}
-// //           />
-// //         )}
+//         {/* Show search bar only on jobs page, not home page */}
+//         {!isHome && (
+//           <SearchBar 
+//             onSearch={handleSearch}
+//             searchTerm={searchTerm}
+//             setSearchTerm={setSearchTerm}
+//           />
+//         )}
 
-// //         {loading ? (
-// //           <Spinner loading={loading} />
-// //         ) : (
-// //           <>
-// //             {/* Show search results count */}
-// //             {!isHome && searchTerm && (
-// //               <div className="text-center mb-4">
-// //                 <p className="text-gray-600">
-// //                   Found {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} 
-// //                   {searchTerm && ` matching "${searchTerm}"`}
-// //                 </p>
-// //               </div>
-// //             )}
+//         {loading ? (
+//           <Spinner loading={loading} />
+//         ) : (
+//           <>
+//             {/* Show search results count */}
+//             {!isHome && searchTerm && (
+//               <div className="text-center mb-4">
+//                 <p className="text-gray-600">
+//                   Found {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} 
+//                   {searchTerm && ` matching "${searchTerm}"`}
+//                 </p>
+//               </div>
+//             )}
 
-// //             {/* Show jobs or no results message */}
-// //             {filteredJobs.length > 0 ? (
-// //               <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-// //                 {filteredJobs.map((job) => (
-// //                   <JobListing key={job.id} job={job} />
-// //                 ))}
-// //               </div>
-// //             ) : (
-// //               !isHome && searchTerm && (
-// //                 <div className="text-center py-8">
-// //                   <p className="text-gray-500 text-lg">
-// //                     No jobs found matching "{searchTerm}"
-// //                   </p>
-// //                   <p className="text-gray-400 text-sm mt-2">
-// //                     Try searching with different keywords
-// //                   </p>
-// //                 </div>
-// //               )
-// //             )}
-// //           </>
-// //         )}
-// //       </div>
-// //     </section>
-// //   );
-// // };
+//             {/* Show jobs or no results message */}
+//             {filteredJobs.length > 0 ? (
+//               <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+//                 {filteredJobs.map((job) => (
+//                   <JobListing key={job.id} job={job} />
+//                 ))}
+//               </div>
+//             ) : (
+//               !isHome && searchTerm && (
+//                 <div className="text-center py-8">
+//                   <p className="text-gray-500 text-lg">
+//                     No jobs found matching "{searchTerm}"
+//                   </p>
+//                   <p className="text-gray-400 text-sm mt-2">
+//                     Try searching with different keywords
+//                   </p>
+//                 </div>
+//               )
+//             )}
+//           </>
+//         )}
+//       </div>
+//     </section>
+//   );
+// };
 
-// // export default JobListings;
+// export default JobListings;
 // import { useState, useEffect } from 'react';
 // import { useLocation } from 'react-router-dom';
 // import JobListing from './JobListing';
@@ -462,8 +462,9 @@
 // };
 
 // export default JobListings;
-import { useState, useEffect } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import JobListing from './JobListing';
 import Spinner from './Spinner';
 
@@ -472,6 +473,19 @@ const JobListings = ({ isHome = false }) => {
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
+  const { user } = useContext(AuthContext);
+  const [savedJobs, setSavedJobs] = useState([]);
+
+  const saveJob = (jobId, developerId) => {
+    if (!savedJobs.some(sj => sj.jobId === jobId && sj.developerId === developerId)) {
+      setSavedJobs([...savedJobs, {
+        id: Date.now().toString(),
+        jobId,
+        developerId,
+        savedAt: new Date().toISOString()
+      }]);
+    }
+  };
 
   const parseSalaryRange = (salaryStr) => {
     if (!salaryStr) return [null, null];
@@ -586,9 +600,8 @@ const JobListings = ({ isHome = false }) => {
           );
         });
       }
-      // ...existing code...
 
-      // Location filter
+      // Apply location filter
       if (locationFilter) {
         filtered = filtered.filter((job) =>
           job.location.toLowerCase().includes(locationFilter.toLowerCase())

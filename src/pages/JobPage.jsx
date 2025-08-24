@@ -3,12 +3,28 @@ import { FaArrowLeft, FaMapMarker } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
+import { useState, useEffect } from 'react';
+import { validateEmail } from '../utils/validateEmail';
 
-const JobPage = ({ deleteJob }) => {
+const JobPage = ({ deleteJob, applyToJob, saveJob }) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const job = useLoaderData();
   const { user, hasAnyRole } = useAuth();
+  const [coverLetter, setCoverLetter] = useState('');
+  const [applied, setApplied] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    // Check if already saved for this user/job
+    const checkSaved = async () => {
+      if (!user || !job) return;
+      const res = await fetch(`http://localhost:8000/savedJobs?jobId=${job.id}&developerId=${user.id}`);
+      const data = await res.json();
+      setSaved(data.length > 0);
+    };
+    checkSaved();
+  }, [user, job]);
 
   // Check if user can manage this job
   const canManageJob = () => {
@@ -36,6 +52,32 @@ const JobPage = ({ deleteJob }) => {
     toast.success('Job deleted successfully');
 
     navigate('/jobs');
+  };
+
+  const handleApply = async (e) => {
+    e.preventDefault();
+    await applyToJob(job.id, {
+      developerId: user.id,
+      coverLetter,
+      resume: '', // Add resume upload if needed
+    });
+    setApplied(true);
+  };
+
+  const handleSaveJob = async () => {
+    if (saved) return;
+    await fetch('http://localhost:8000/savedJobs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: Date.now().toString(),
+        jobId: job.id,
+        developerId: user.id,
+        savedAt: new Date().toISOString()
+      })
+    });
+    setSaved(true);
+    toast.success('Job saved!');
   };
 
   return (
@@ -126,11 +168,34 @@ const JobPage = ({ deleteJob }) => {
               {user && hasAnyRole(['developer']) && (
                 <div className='bg-white p-6 rounded-lg shadow-md mt-6'>
                   <h3 className='text-xl font-bold mb-6'>Apply for this Job</h3>
-                  <button className='bg-green-500 hover:bg-green-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline'>
-                    Apply Now
-                  </button>
-                  <button className='bg-blue-500 hover:bg-blue-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4'>
-                    Save Job
+                  {!applied ? (
+                    <form onSubmit={handleApply}>
+                      <textarea
+                        value={coverLetter}
+                        onChange={e => setCoverLetter(e.target.value)}
+                        placeholder="Write your cover letter"
+                        required
+                        className="w-full p-2 border rounded-md"
+                      />
+                      <button
+                        type="submit"
+                        className='bg-green-500 hover:bg-green-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4'
+                      >
+                        Apply Now
+                      </button>
+                    </form>
+                  ) : (
+                    <div className="text-green-600 font-bold">
+                      You have applied to this job.
+                    </div>
+                  )}
+                  {/* Save Job Button */}
+                  <button
+                    className={`mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline ${saved ? 'bg-gray-400 cursor-not-allowed' : ''}`}
+                    onClick={handleSaveJob}
+                    disabled={saved}
+                  >
+                    {saved ? 'Saved' : 'Save Job'}
                   </button>
                 </div>
               )}
