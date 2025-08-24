@@ -73,7 +73,7 @@ const RegisterPage = () => {
       const emailExists = users.some(u => u.email.toLowerCase() === formData.email.toLowerCase());
       if (emailExists) {
         setEmailError('Email already exists. Please use a different email.');
-        toast.error('Email already exists. Please use a different email.');
+        // toast.error('Email already exists. Please use a different email.');
         setLoading(false);
         return;
       }
@@ -169,11 +169,6 @@ const RegisterPage = () => {
                 className={`mt-1 appearance-none block w-full px-3 py-2 border ${emailError ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
                 placeholder="Enter your email"
               />
-              {emailError && (
-                <div className='mt-1 text-red-600 text-sm flex items-center'>
-                  {emailError}
-                </div>
-              )}
               {emailError && (
                 <div className='mt-1 text-red-600 text-sm flex items-center'>
                   {emailError}
