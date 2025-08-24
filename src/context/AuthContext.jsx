@@ -1,6 +1,7 @@
+
 import { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -100,9 +101,16 @@ export const AuthProvider = ({ children }) => {
         lastName: userData.lastName,
         role: userData.role,
         company: userData.company || null,
+        // Add skills field for developers
+        skills: userData.role === 'developer' ? userData.skills || [] : undefined,
         createdAt: new Date().toISOString(),
         isActive: true
       };
+
+      // Remove skills field if not a developer
+      if (userData.role !== 'developer') {
+        delete newUser.skills;
+      }
 
       // Add user to database
       const createResponse = await fetch('/api/users', {
@@ -203,6 +211,38 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Get available skills
+  const getSkills = async () => {
+    try {
+      const response = await fetch('/api/skills');
+      if (response.ok) {
+        const data = await response.json();
+        return data.skills || data;
+      }
+      
+      // Fallback to static skills data from your JSON
+      return [
+        { id: 1, name: "JavaScript", category: "Programming Language" },
+        { id: 2, name: "React", category: "Frontend Framework" },
+        { id: 3, name: "Node.js", category: "Backend Technology" },
+        { id: 4, name: "Python", category: "Programming Language" },
+        { id: 5, name: "Java", category: "Programming Language" },
+        { id: 6, name: "SQL", category: "Database" }
+      ];
+    } catch (error) {
+      console.error('Failed to fetch skills:', error);
+      // Return fallback skills
+      return [
+        { id: 1, name: "JavaScript", category: "Programming Language" },
+        { id: 2, name: "React", category: "Frontend Framework" },
+        { id: 3, name: "Node.js", category: "Backend Technology" },
+        { id: 4, name: "Python", category: "Programming Language" },
+        { id: 5, name: "Java", category: "Programming Language" },
+        { id: 6, name: "SQL", category: "Database" }
+      ];
+    }
+  };
+
   const value = {
     user,
     login,
@@ -213,7 +253,8 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     loading,
     getAllUsers,
-    updateProfile
+    updateProfile,
+    getSkills
   };
 
   return (

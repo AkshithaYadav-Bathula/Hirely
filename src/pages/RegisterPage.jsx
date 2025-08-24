@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import SkillsDropdown from '../components/SkillsDropdown';
+import { validateEmail } from '../utils/validateEmail';
 
 const RegisterPage = () => {
+  const [emailError, setEmailError] = useState('');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -11,7 +14,8 @@ const RegisterPage = () => {
     password: '',
     confirmPassword: '',
     role: 'developer', // default role
-    company: ''
+    company: '',
+    skills: [] // New field for developer skills
   });
   const [loading, setLoading] = useState(false);
   
@@ -19,15 +23,29 @@ const RegisterPage = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
+    if (e.target.name === 'email') {
+      setEmailError('');
+    }
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
 
+  const handleSkillsChange = (skills) => {
+    setFormData({
+      ...formData,
+      skills: skills
+    });
+  };
+
   const handleSubmit = async (e) => {
+    if (!validateEmail(formData.email)) {
+      setEmailError('Please enter a valid email address.');
+      return;
+    }
     e.preventDefault();
-    
+
     // Validation
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
@@ -39,17 +57,41 @@ const RegisterPage = () => {
       return;
     }
 
+    // For developers, require at least one skill
+    if (formData.role === 'developer' && formData.skills.length === 0) {
+      toast.error('Please select at least one skill');
+      return;
+    }
+
     setLoading(true);
 
+    // Duplicate email check
+    try {
+      const res = await fetch('/src/jobs.json');
+      const data = await res.json();
+      const users = data.users || [];
+      const emailExists = users.some(u => u.email.toLowerCase() === formData.email.toLowerCase());
+      if (emailExists) {
+        setEmailError('Email already exists. Please use a different email.');
+        // toast.error('Email already exists. Please use a different email.');
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      toast.error('Could not validate email. Please try again.');
+      setLoading(false);
+      return;
+    }
+
     const result = await register(formData);
-    
+
     if (result.success) {
       toast.success('Registration successful!');
       navigate('/');
     } else {
       toast.error(result.error || 'Registration failed');
     }
-    
+
     setLoading(false);
   };
 
@@ -117,8 +159,21 @@ const RegisterPage = () => {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                onBlur={() => {
+                  if (!validateEmail(formData.email)) {
+                    setEmailError('Please enter a valid email address.');
+                  } else {
+                    setEmailError('');
+                  }
+                }}
+                className={`mt-1 appearance-none block w-full px-3 py-2 border ${emailError ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                placeholder="Enter your email"
               />
+              {emailError && (
+                <div className='mt-1 text-red-600 text-sm flex items-center'>
+                  {emailError}
+                </div>
+              )}
             </div>
 
             {/* Role */}
@@ -154,6 +209,15 @@ const RegisterPage = () => {
                   className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
+            )}
+
+            {/* Skills (only for developers) */}
+            {formData.role === 'developer' && (
+              <SkillsDropdown
+                selectedSkills={formData.skills}
+                onSkillsChange={handleSkillsChange}
+                maxSkills={5}
+              />
             )}
 
             {/* Password */}
