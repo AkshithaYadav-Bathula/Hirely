@@ -16,12 +16,13 @@ const JobPage = ({ deleteJob, applyToJob, saveJob }) => {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    // Check if already saved for this user/job
+    // Check if already saved for this user/job using user's savedJobs array
     const checkSaved = async () => {
       if (!user || !job) return;
-      const res = await fetch(`http://localhost:8000/savedJobs?jobId=${job.id}&developerId=${user.id}`);
-      const data = await res.json();
-      setSaved(data.length > 0);
+      const res = await fetch(`http://localhost:8000/users/${user.id}`);
+      const userData = await res.json();
+      const savedJobs = userData.savedJobs || [];
+      setSaved(savedJobs.includes(job.id));
     };
     checkSaved();
   }, [user, job]);
@@ -66,18 +67,20 @@ const JobPage = ({ deleteJob, applyToJob, saveJob }) => {
 
   const handleSaveJob = async () => {
     if (saved) return;
-    await fetch('http://localhost:8000/savedJobs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: Date.now().toString(),
-        jobId: job.id,
-        developerId: user.id,
-        savedAt: new Date().toISOString()
-      })
-    });
-    setSaved(true);
-    toast.success('Job saved!');
+    // Fetch current user data
+    const userRes = await fetch(`http://localhost:8000/users/${user.id}`);
+    const userData = await userRes.json();
+    const savedJobs = userData.savedJobs || [];
+    if (!savedJobs.includes(job.id)) {
+      const updatedSavedJobs = [...savedJobs, job.id];
+      await fetch(`http://localhost:8000/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ savedJobs: updatedSavedJobs })
+      });
+      setSaved(true);
+      toast.success('Job saved!');
+    }
   };
 
   return (

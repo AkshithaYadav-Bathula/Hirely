@@ -12,6 +12,15 @@ const MyJobsPage = () => {
   const [applications, setApplications] = useState([]);
   const [developers, setDevelopers] = useState([]);
 
+
+// Filter jobs posted by this employer.
+
+// Load all applications & users.
+
+// Render cards with edit/delete options.
+
+// Applications can later be matched to jobs using jobId and developerId.
+
   useEffect(() => {
     const fetchJobsAndApplications = async () => {
       if (!user) return;
