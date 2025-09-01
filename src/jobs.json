@@ -331,7 +331,17 @@
         {
           "id": 3,
           "name": "Node.js"
+        },
+        {
+          "id": 4,
+          "name": "Python"
         }
+      ],
+      "savedJobs": [
+        "1",
+        "2",
+        "3", 
+        "4"
       ],
       "createdAt": "2024-01-03T00:00:00Z",
       "isActive": true
@@ -369,6 +379,9 @@
           "name": "SQL"
         }
       ],
+      "savedJobs": [
+        "6"
+      ],
       "createdAt": "2024-01-05T00:00:00Z",
       "isActive": true
     },
@@ -390,6 +403,7 @@
           "name": "React"
         }
       ],
+      "savedJobs": [],
       "createdAt": "2025-08-22T15:19:48.099Z",
       "isActive": true
     },
@@ -413,6 +427,7 @@
           "category": "Frontend Framework"
         }
       ],
+      "savedJobs": [],
       "createdAt": "2025-08-22T16:53:27.396Z",
       "isActive": true
     },
@@ -473,68 +488,15 @@
       "resume": "",
       "status": "pending",
       "appliedAt": "2025-08-23T06:20:38.208Z"
-    }
-  ],
-  "savedJobs": [
-    {
-      "id": "1",
-      "jobId": "4",
-      "developerId": "3",
-      "savedAt": "2024-02-08T12:00:00Z"
     },
     {
-      "id": "2",
-      "jobId": "5",
-      "developerId": "3",
-      "savedAt": "2024-02-09T15:30:00Z"
-    },
-    {
-      "id": "3",
-      "jobId": "6",
-      "developerId": "5",
-      "savedAt": "2024-02-10T11:20:00Z"
-    },
-    {
-      "id": "1756013788010",
-      "jobId": "1",
-      "developerId": "3",
-      "savedAt": "2025-08-24T05:36:28.010Z"
-    },
-    {
-      "id": "1756013789563",
-      "jobId": "1",
-      "developerId": "3",
-      "savedAt": "2025-08-24T05:36:29.563Z"
-    },
-    {
-      "id": "1756013801457",
-      "jobId": "1",
-      "developerId": "3",
-      "savedAt": "2025-08-24T05:36:41.457Z"
-    },
-    {
-      "id": "1756013813410",
-      "jobId": "2",
-      "developerId": "3",
-      "savedAt": "2025-08-24T05:36:53.410Z"
-    },
-    {
-      "id": "1756013993522",
-      "jobId": "2",
-      "developerId": "3",
-      "savedAt": "2025-08-24T05:39:53.522Z"
-    },
-    {
-      "id": "1756013996313",
-      "jobId": "2",
-      "developerId": "3",
-      "savedAt": "2025-08-24T05:39:56.313Z"
-    },
-    {
-      "id": "1756014219500",
+      "id": "1756446982112",
       "jobId": "95dd",
       "developerId": "3",
-      "savedAt": "2025-08-24T05:43:39.500Z"
+      "coverLetter": "hulhli;kjljhj",
+      "resume": "",
+      "status": "pending",
+      "appliedAt": "2025-08-29T05:56:22.113Z"
     }
   ]
 }

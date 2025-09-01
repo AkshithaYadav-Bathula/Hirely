@@ -24,6 +24,11 @@ const MyApplicationsPage = () => {
     fetchApplications();
   }, [user]);
 
+//   Logged in user → Jane (id: 3)
+
+// Fetch apps for developerId 3 → gives those 3 applications
+
+// Merge with jobs → gives you the final array you pasted
   const handleWithdraw = async (appId) => {
     await applicationsAPI.delete(appId);
     setApplications(applications.filter(app => app.id !== appId));
