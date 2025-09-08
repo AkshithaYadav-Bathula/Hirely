@@ -21,10 +21,11 @@
 .profile-photo {
   width: 120px;
   height: 120px;
-  border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #6c47ff;
-  margin-right: 20px;
+  border-radius: 50%;      /* Makes the image circular */
+  border: 3px solid #4F46E5;
+  box-shadow: 0 2px 8px rgba(63, 45, 150, 0.08);
+  background: #fff;
 }
 
 .profile-info {
@@ -135,22 +136,22 @@
 
 /* Button */
 .profile-btn {
-  background: linear-gradient(90deg, #3f2d96, #6c47ff);
-  color: #fff;
+  background: #4F46E5 !important;   /* Indigo/violet, force override */
+  color: #fff !important;
   font-weight: 600;
-  padding: 14px 0;
+  padding: 12px 0;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   width: 100%;
   font-size: 1.1rem;
-  box-shadow: 0 4px 12px rgba(63, 45, 150, 0.2);
+  box-shadow: 0 2px 8px rgba(63, 45, 150, 0.08);
   cursor: pointer;
-  transition: all 0.25s;
+  margin-top: 10px;
+  transition: background 0.2s;
 }
 
 .profile-btn:hover {
-  background: linear-gradient(90deg, #6c47ff, #3f2d96);
-  transform: translateY(-2px);
+  background: #4338ca !important;
 }
 
 /* Video Preview */
@@ -167,4 +168,11 @@
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(63, 45, 150, 0.10);
   border: 1px solid #e0e3f0;
+}
+
+/* Button when loading */
+.profile-btn:disabled {
+  background: #ccc;
+  color: #666;
+  cursor: not-allowed;
 }
