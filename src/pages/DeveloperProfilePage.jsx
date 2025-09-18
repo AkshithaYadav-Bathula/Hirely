@@ -1,11 +1,20 @@
 import React, { useEffect, useState, useContext } from "react";
 import "./DeveloperProfilePage.css";
 import { AuthContext } from "../context/AuthContext";
+import {
+  AWS_ACCESS_KEY_ID,
+  AWS_ACCESS_KEY,
+  AWS_REGION,
+  AWS_BUCKET,
+  VIDEO_FILE_SIZE_LIMIT,
+  VIDEO_LENGTH_LIMIT,
+  VIDEO_INPUT_S3_URL,
+  VIDEO_DELETE_S3_URL
+} from "../awsConfig";
+import S3FileUpload from '../components/S3FileUpload';
 
-// JSON server for skills
+// JSON server for skills and profile
 const JSON_API = "http://localhost:8000";
-// Django backend for profile
-const DJANGO_API = "http://localhost:9000/api";
 
 const DeveloperProfilePage = () => {
   const { user } = useContext(AuthContext);
@@ -13,9 +22,9 @@ const DeveloperProfilePage = () => {
   const [about, setAbout] = useState("");
   const [skills, setSkills] = useState([]);
   const [allSkills, setAllSkills] = useState([]);
-  const [resume, setResume] = useState(null);
-  const [profilePhoto, setProfilePhoto] = useState(null);
-  const [introVideo, setIntroVideo] = useState(null);
+  const [resumeUrl, setResumeUrl] = useState("");
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState("");
+  const [introVideoUrl, setIntroVideoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
@@ -26,33 +35,76 @@ const DeveloperProfilePage = () => {
       .then(data => setAllSkills(data));
   }, []);
 
-  // Fetch developer profile from Django
+  // Fetch developer profile from JSON server
   useEffect(() => {
     if (!user?.id) return;
-    fetch(`${DJANGO_API}/developers/${user.id}/`)
+    fetch(`${JSON_API}/developers/${user.id}`)
       .then(res => res.json())
       .then(data => {
         setProfile(data);
         setAbout(data.about || "");
-        setSkills(data.skills ? data.skills.map(s => s.id) : []);
+        setSkills(data.skills || []);
+        setResumeUrl(data.resumeUrl || "");
+        setProfilePhotoUrl(data.profilePhotoUrl || "");
+        setIntroVideoUrl(data.introVideoUrl || "");
       });
   }, [user]);
 
+  // Helper: Upload file to S3
+  const uploadToS3 = async (file, folder = "") => {
+    const fileName = `${folder}${Date.now()}_${file.name}`;
+    const url = `https://${AWS_BUCKET}.s3.${AWS_REGION}.amazonaws.com/${fileName}`;
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type,
+        "x-amz-acl": "public-read"
+      },
+      body: file
+    });
+    if (res.ok) return url;
+    throw new Error("Upload failed");
+  };
+
+  // Handle file uploads
+  const handleFileUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setLoading(true);
+    try {
+      let url = "";
+      if (type === "resume") url = await uploadToS3(file, "resumes/");
+      if (type === "profilePhoto") url = await uploadToS3(file, "profile_photos/");
+      if (type === "introVideo") {
+        if (file.size > VIDEO_FILE_SIZE_LIMIT) throw new Error("File too large");
+        url = await uploadToS3(file, "intro_videos/");
+      }
+      if (type === "resume") setResumeUrl(url);
+      if (type === "profilePhoto") setProfilePhotoUrl(url);
+      if (type === "introVideo") setIntroVideoUrl(url);
+      setSuccessMsg(`${type} uploaded!`);
+    } catch (err) {
+      setSuccessMsg(err.message);
+    }
+    setLoading(false);
+  };
+
+  // Save profile to JSON server
   const handleUpdate = async (e) => {
     e.preventDefault();
-    setSuccessMsg(""); // Clear previous message
+    setSuccessMsg("");
     setLoading(true);
-    const formData = new FormData();
-    formData.append("about", about);
-    skills.forEach(skillId => formData.append("skills", skillId));
-    if (resume) formData.append("resume", resume);
-    if (profilePhoto) formData.append("profile_photo", profilePhoto);
-    if (introVideo) formData.append("intro_video", introVideo);
-
     try {
-      const res = await fetch(`${DJANGO_API}/developers/${user.id}/`, {
+      const res = await fetch(`${JSON_API}/developers/${user.id}`, {
         method: "PATCH",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          about,
+          skills,
+          resumeUrl,
+          profilePhotoUrl,
+          introVideoUrl,
+        }),
       });
       if (res.ok) {
         setSuccessMsg("Profile saved successfully!");
@@ -75,7 +127,7 @@ const DeveloperProfilePage = () => {
       {/* Profile Header */}
       <div className="profile-header">
         <img
-          src={profile.profile_photo ? `http://localhost:9000${profile.profile_photo}` : "https://via.placeholder.com/120"}
+          src={profilePhotoUrl || "https://via.placeholder.com/120"}
           alt="Profile"
           className="profile-photo"
         />
@@ -87,37 +139,50 @@ const DeveloperProfilePage = () => {
       </div>
 
       <form onSubmit={handleUpdate}>
-        {/* Upload Resume */}
-        <div className="profile-section">
-          <label className="profile-label">Upload Resume</label>
-          <input type="file" accept=".pdf,.doc,.docx" className="profile-input" onChange={e => setResume(e.target.files[0])} />
-          {profile.resume && (
-            <a href={`${DJANGO_API.replace('/api','')}${profile.resume}`} target="_blank" rel="noopener noreferrer" style={{ display: "block", marginTop: 8, color: "#4338ca" }}>View Resume</a>
-          )}
-        </div>
-
-        {/* Intro Video */}
-        <div className="profile-section">
-          <label className="profile-label">Intro Video</label>
-          <input type="file" accept="video/*" className="profile-input" onChange={e => setIntroVideo(e.target.files[0])} />
-          {profile.intro_video && (
-            <video src={`${DJANGO_API.replace('/api','')}${profile.intro_video}`} controls width="320" style={{ marginTop: 12, borderRadius: 8 }} />
-          )}
-        </div>
-
+        <S3FileUpload
+          value={resumeUrl}
+          onChange={e => setResumeUrl(e.target.value)}
+          name="resume"
+          fileType="file"
+          folder="resumes/"
+          sizeLimit={10 * 1024 * 1024}
+          accept=".pdf,.doc,.docx"
+          label="Upload Resume"
+        />
+        <S3FileUpload
+          value={profilePhotoUrl}
+          onChange={e => setProfilePhotoUrl(e.target.value)}
+          name="profilePhoto"
+          fileType="image"
+          folder="profile_photos/"
+          sizeLimit={5 * 1024 * 1024}
+          accept="image/*"
+          label="Profile Photo"
+        />
+        <S3FileUpload
+          value={introVideoUrl}
+          onChange={e => setIntroVideoUrl(e.target.value)}
+          name="introVideo"
+          fileType="video"
+          folder="intro_videos/"
+          sizeLimit={VIDEO_FILE_SIZE_LIMIT}
+          accept="video/*"
+          label="Intro Video"
+        />
         {/* Skills */}
         <div className="profile-section">
           <label className="profile-label">Skills</label>
-          <select multiple value={skills} onChange={e => setSkills(Array.from(e.target.selectedOptions, opt => parseInt(opt.value)))} className="profile-input">
+          <select multiple value={skills} onChange={e => setSkills(Array.from(e.target.selectedOptions, opt => opt.value))} className="profile-input">
             {allSkills.map(skill => (
               <option key={skill.id} value={skill.id}>{skill.name}</option>
             ))}
           </select>
           <div className="skills-tags" style={{ marginTop: 8 }}>
-            {profile.skills && profile.skills.length > 0
-              ? profile.skills.map(skill => (
-                  <span key={skill.id} className="skill-tag">{skill.name}</span>
-                ))
+            {skills.length > 0
+              ? skills.map(skillId => {
+                  const skill = allSkills.find(s => s.id === skillId);
+                  return skill ? <span key={skill.id} className="skill-tag">{skill.name}</span> : null;
+                })
               : <span className="skill-tag">No skills added yet</span>
             }
             <span className="skill-tag add-skill">+ Add Skill</span>
@@ -134,12 +199,6 @@ const DeveloperProfilePage = () => {
             onChange={e => setAbout(e.target.value)}
             placeholder="Write a short bio about your work, experience, and goals..."
           />
-        </div>
-
-        {/* Profile Photo */}
-        <div className="profile-section">
-          <label className="profile-label">Profile Photo</label>
-          <input type="file" accept="image/*" onChange={e => setProfilePhoto(e.target.files[0])} />
         </div>
 
         {/* Projects (static for now) */}
