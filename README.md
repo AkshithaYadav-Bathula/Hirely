@@ -1,8 +1,6 @@
-# React Jobs Project 
+# Hirely: Recruiter Dashboard \& Candidate Management
 
 
-
-<img src="public/screen.png" />
 
 ## Usage
 
