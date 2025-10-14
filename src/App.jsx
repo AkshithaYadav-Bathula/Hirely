@@ -20,6 +20,7 @@ import EditJobPage from './pages/EditJobPage';
 import MyApplicationsPage from './pages/MyApplicationsPage';
 import MyJobApplicantsPage from './pages/MyJobApplicantsPage';
 import SavedJobsPage from './pages/SavedJobsPage';
+import RecommendationsPage from './pages/RecommendationsPage';
 // import DeveloperProfilePage from './pages/DeveloperProfilePage';
 // import EmployerProfilePage from './pages/EmployerProfilePage';
 import { useContext } from 'react';
@@ -223,6 +224,14 @@ const App = () => {
           element={
             <ProtectedRoute roles={['developer']}>
               <SavedJobsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/recommendations'
+          element={
+            <ProtectedRoute roles={['developer']}>
+              <RecommendationsPage />
             </ProtectedRoute>
           }
         />

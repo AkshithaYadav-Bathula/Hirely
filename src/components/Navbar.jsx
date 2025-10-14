@@ -61,6 +61,10 @@ const Navbar = () => {
                         <NavLink to='/saved-jobs' className={linkClass}>
                           Saved Jobs
                         </NavLink>
+                        {/* ✅ NEW: Add Recommendations link */}
+                        <NavLink to='/recommendations' className={linkClass}>
+                          Recommendations
+                        </NavLink>
                       </>
                     )}
 

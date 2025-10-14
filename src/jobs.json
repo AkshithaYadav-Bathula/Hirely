@@ -433,7 +433,10 @@
       "resume": "",
       "introVideo": "",
       "companyLogo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
-      "about": "<p><strong style=\"color: rgb(118, 118, 118);\">L4G – Learning for Growth</strong><span style=\"color: rgb(71, 71, 71);\">&nbsp;is a one-stop integrated platform that creates an end-to-end ecosystem for Education, Skill, Employability, and Entrepreneurship.</span></p>"
+      "about": "<p><strong style=\"color: rgb(118, 118, 118);\">L4G – Learning for Growth</strong><span style=\"color: rgb(71, 71, 71);\">&nbsp;is a one-stop integrated platform that creates an end-to-end ecosystem for Education, Skill, Employability, and Entrepreneurship.</span></p>",
+      "skills": [],
+      "profileStatus": "published",
+      "publishedAt": "2025-10-14T14:53:30.147Z"
     },
     {
       "id": "3",
