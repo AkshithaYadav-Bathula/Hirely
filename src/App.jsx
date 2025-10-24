@@ -20,20 +20,12 @@ import EditJobPage from './pages/EditJobPage';
 import MyApplicationsPage from './pages/MyApplicationsPage';
 import MyJobApplicantsPage from './pages/MyJobApplicantsPage';
 import SavedJobsPage from './pages/SavedJobsPage';
-import DeveloperProfilePage from './pages/DeveloperProfilePage';
-import EmployerProfilePage from './pages/EmployerProfilePage';
+import RecommendationsPage from './pages/RecommendationsPage';
+// import DeveloperProfilePage from './pages/DeveloperProfilePage';
+// import EmployerProfilePage from './pages/EmployerProfilePage';
 import { useContext } from 'react';
 import { AuthContext } from './context/AuthContext';
-import ProfileRoute from './pages/ProfileRoute';
-
-function ProfileRouteWrapper() {
-  const { currentUser } = useContext(AuthContext);
-
-  if (!currentUser) return <div>Not logged in</div>;
-  if (currentUser.role === 'developer') return <DeveloperProfilePage />;
-  if (currentUser.role === 'employer') return <EmployerProfilePage />;
-  return <div>Profile not available for this role.</div>;
-}
+import ProfilePage from './pages/ProfilePage';
 
 const App = () => {
   // Add New Job — called by AddJobPage via prop addJobSubmit
@@ -235,6 +227,14 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path='/recommendations'
+          element={
+            <ProtectedRoute roles={['developer']}>
+              <RecommendationsPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Protected Routes - Employer Specific */}
         <Route
@@ -277,7 +277,7 @@ const App = () => {
           path='/profile'
           element={
             <ProtectedRoute>
-              <ProfileRoute />
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

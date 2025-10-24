@@ -29,6 +29,101 @@
       "id": "6",
       "name": "SQL",
       "category": "Database"
+    },
+    {
+      "id": "7",
+      "name": "Angular",
+      "category": "Frontend Framework"
+    },
+    {
+      "id": "8",
+      "name": "Vue.js",
+      "category": "Frontend Framework"
+    },
+    {
+      "id": "9",
+      "name": "Express.js",
+      "category": "Backend Technology"
+    },
+    {
+      "id": "10",
+      "name": "MongoDB",
+      "category": "Database"
+    },
+    {
+      "id": "11",
+      "name": "PostgreSQL",
+      "category": "Database"
+    },
+    {
+      "id": "12",
+      "name": "TypeScript",
+      "category": "Programming Language"
+    },
+    {
+      "id": "13",
+      "name": "HTML",
+      "category": "Markup Language"
+    },
+    {
+      "id": "14",
+      "name": "CSS",
+      "category": "Styling"
+    },
+    {
+      "id": "15",
+      "name": "SASS/SCSS",
+      "category": "Styling"
+    },
+    {
+      "id": "16",
+      "name": "Tailwind CSS",
+      "category": "Styling"
+    },
+    {
+      "id": "17",
+      "name": "Bootstrap",
+      "category": "Styling"
+    },
+    {
+      "id": "18",
+      "name": "Redux",
+      "category": "State Management"
+    },
+    {
+      "id": "19",
+      "name": "Context API",
+      "category": "State Management"
+    },
+    {
+      "id": "20",
+      "name": "AWS",
+      "category": "Cloud Platform"
+    },
+    {
+      "id": "21",
+      "name": "Docker",
+      "category": "DevOps"
+    },
+    {
+      "id": "22",
+      "name": "Git",
+      "category": "Version Control"
+    },
+    {
+      "id": "23",
+      "name": "GitHub",
+      "category": "Version Control"
+    },
+    {
+      "id": "24",
+      "name": "REST API",
+      "category": "API Development"
+    },
+    {
+      "id": "25",
+      "name": "GraphQL",
+      "category": "API Development"
     }
   ],
   "jobs": [
@@ -50,18 +145,21 @@
       "status": "active",
       "requiredSkills": [
         {
-          "id": 1,
-          "name": "JavaScript"
+          "id": "1",
+          "name": "JavaScript",
+          "category": "Programming Language"
         },
         {
-          "id": 2,
-          "name": "React"
+          "id": "2",
+          "name": "React",
+          "category": "Frontend Framework"
         }
       ],
       "preferredSkills": [
         {
-          "id": 3,
-          "name": "Node.js"
+          "id": "3",
+          "name": "Node.js",
+          "category": "Backend Technology"
         }
       ]
     },
@@ -83,12 +181,14 @@
       "status": "active",
       "requiredSkills": [
         {
-          "id": 1,
-          "name": "JavaScript"
+          "id": "1",
+          "name": "JavaScript",
+          "category": "Programming Language"
         },
         {
-          "id": 2,
-          "name": "React"
+          "id": "2",
+          "name": "React",
+          "category": "Frontend Framework"
         }
       ],
       "preferredSkills": []
@@ -111,22 +211,26 @@
       "status": "active",
       "requiredSkills": [
         {
-          "id": 1,
-          "name": "JavaScript"
+          "id": "1",
+          "name": "JavaScript",
+          "category": "Programming Language"
         },
         {
-          "id": 2,
-          "name": "React"
+          "id": "2",
+          "name": "React",
+          "category": "Frontend Framework"
         },
         {
-          "id": 3,
-          "name": "Node.js"
+          "id": "3",
+          "name": "Node.js",
+          "category": "Backend Technology"
         }
       ],
       "preferredSkills": [
         {
-          "id": 6,
-          "name": "SQL"
+          "id": "6",
+          "name": "SQL",
+          "category": "Database"
         }
       ]
     },
@@ -148,18 +252,21 @@
       "status": "active",
       "requiredSkills": [
         {
-          "id": 1,
-          "name": "JavaScript"
+          "id": "1",
+          "name": "JavaScript",
+          "category": "Programming Language"
         },
         {
-          "id": 2,
-          "name": "React"
+          "id": "2",
+          "name": "React",
+          "category": "Frontend Framework"
         }
       ],
       "preferredSkills": [
         {
-          "id": 3,
-          "name": "Node.js"
+          "id": "3",
+          "name": "Node.js",
+          "category": "Backend Technology"
         }
       ]
     },
@@ -181,18 +288,21 @@
       "status": "active",
       "requiredSkills": [
         {
-          "id": 1,
-          "name": "JavaScript"
+          "id": "1",
+          "name": "JavaScript",
+          "category": "Programming Language"
         }
       ],
       "preferredSkills": [
         {
-          "id": 2,
-          "name": "React"
+          "id": "2",
+          "name": "React",
+          "category": "Frontend Framework"
         },
         {
-          "id": 3,
-          "name": "Node.js"
+          "id": "3",
+          "name": "Node.js",
+          "category": "Backend Technology"
         }
       ]
     },
@@ -214,30 +324,36 @@
       "status": "active",
       "requiredSkills": [
         {
-          "id": 1,
-          "name": "JavaScript"
+          "id": "1",
+          "name": "JavaScript",
+          "category": "Programming Language"
         },
         {
-          "id": 4,
-          "name": "Python"
+          "id": "4",
+          "name": "Python",
+          "category": "Programming Language"
         },
         {
-          "id": 6,
-          "name": "SQL"
+          "id": "6",
+          "name": "SQL",
+          "category": "Database"
         }
       ],
       "preferredSkills": [
         {
-          "id": 2,
-          "name": "React"
+          "id": "2",
+          "name": "React",
+          "category": "Frontend Framework"
         },
         {
-          "id": 3,
-          "name": "Node.js"
+          "id": "3",
+          "name": "Node.js",
+          "category": "Backend Technology"
         },
         {
-          "id": 5,
-          "name": "Java"
+          "id": "5",
+          "name": "Java",
+          "category": "Programming Language"
         }
       ]
     },
@@ -259,14 +375,16 @@
       "status": "active",
       "requiredSkills": [
         {
-          "id": 1,
-          "name": "JavaScript"
+          "id": "1",
+          "name": "JavaScript",
+          "category": "Programming Language"
         }
       ],
       "preferredSkills": [
         {
-          "id": 2,
-          "name": "React"
+          "id": "2",
+          "name": "React",
+          "category": "Frontend Framework"
         }
       ]
     },
@@ -309,42 +427,46 @@
       "role": "employer",
       "company": "NewTek Solutions",
       "createdAt": "2024-01-02T00:00:00Z",
-      "isActive": true
+      "isActive": true,
+      "name": "L4G Solutions Private Limited ",
+      "profilePhoto": "",
+      "resume": "",
+      "introVideo": "",
+      "companyLogo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
+      "about": "<p><strong style=\"color: rgb(118, 118, 118);\">L4G – Learning for Growth</strong><span style=\"color: rgb(71, 71, 71);\">&nbsp;is a one-stop integrated platform that creates an end-to-end ecosystem for Education, Skill, Employability, and Entrepreneurship.</span></p>",
+      "skills": [],
+      "profileStatus": "published",
+      "publishedAt": "2025-10-14T14:53:30.147Z"
     },
     {
       "id": "3",
       "email": "dev@example.com",
       "password": "dev123",
-      "firstName": "Jane",
+      "firstName": "Akshitha",
       "lastName": "Developer",
       "role": "developer",
       "company": null,
       "skills": [
-        {
-          "id": 1,
-          "name": "JavaScript"
-        },
-        {
-          "id": 2,
-          "name": "React"
-        },
-        {
-          "id": 3,
-          "name": "Node.js"
-        },
-        {
-          "id": 4,
-          "name": "Python"
-        }
-      ],
-      "savedJobs": [
         "1",
         "2",
-        "3", 
+        "3"
+      ],
+      "savedJobs": [
+        "2",
+        "3",
         "4"
       ],
       "createdAt": "2024-01-03T00:00:00Z",
-      "isActive": true
+      "isActive": true,
+      "name": "Akshitha Yadav",
+      "profilePhoto": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/gh.jpg?t=1760168779074",
+      "resume": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/Akshitha/resumes/Test1-Akshitha.docx?t=1760171917933",
+      "introVideo": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/3/videos/1.mp4?t=1760458628793",
+      "companyLogo": "",
+      "about": "<p><br></p>",
+      "profileStatus": "published",
+      "publishedAt": "2025-10-21T13:28:05.263Z",
+      "lastModified": "2025-10-15T17:19:05.366Z"
     },
     {
       "id": "4",
@@ -367,16 +489,19 @@
       "company": null,
       "skills": [
         {
-          "id": 1,
-          "name": "JavaScript"
+          "id": "1",
+          "name": "JavaScript",
+          "category": "Programming Language"
         },
         {
-          "id": 4,
-          "name": "Python"
+          "id": "4",
+          "name": "Python",
+          "category": "Programming Language"
         },
         {
-          "id": 6,
-          "name": "SQL"
+          "id": "6",
+          "name": "SQL",
+          "category": "Database"
         }
       ],
       "savedJobs": [
@@ -395,12 +520,14 @@
       "company": null,
       "skills": [
         {
-          "id": 1,
-          "name": "JavaScript"
+          "id": "1",
+          "name": "JavaScript",
+          "category": "Programming Language"
         },
         {
-          "id": 2,
-          "name": "React"
+          "id": "2",
+          "name": "React",
+          "category": "Frontend Framework"
         }
       ],
       "savedJobs": [],
@@ -417,12 +544,12 @@
       "company": null,
       "skills": [
         {
-          "id": 4,
+          "id": "4",
           "name": "Python",
           "category": "Programming Language"
         },
         {
-          "id": 2,
+          "id": "2",
           "name": "React",
           "category": "Frontend Framework"
         }
@@ -444,15 +571,6 @@
     }
   ],
   "applications": [
-    {
-      "id": "2",
-      "jobId": "2",
-      "developerId": "3",
-      "status": "reviewed",
-      "appliedAt": "2024-02-03T14:30:00Z",
-      "coverLetter": "I would love to join your remote team and contribute to your projects.",
-      "resume": "resume_jane_developer.pdf"
-    },
     {
       "id": "3",
       "jobId": "3",
@@ -486,7 +604,7 @@
       "developerId": "3",
       "coverLetter": "gg",
       "resume": "",
-      "status": "pending",
+      "status": "accepted",
       "appliedAt": "2025-08-23T06:20:38.208Z"
     },
     {

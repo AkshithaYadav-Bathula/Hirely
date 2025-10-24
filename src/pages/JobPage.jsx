@@ -66,20 +66,37 @@ const JobPage = ({ deleteJob, applyToJob, saveJob }) => {
   };
 
   const handleSaveJob = async () => {
-    if (saved) return;
-    // Fetch current user data
-    const userRes = await fetch(`http://localhost:8000/users/${user.id}`);
-    const userData = await userRes.json();
-    const savedJobs = userData.savedJobs || [];
-    if (!savedJobs.includes(job.id)) {
-      const updatedSavedJobs = [...savedJobs, job.id];
-      await fetch(`http://localhost:8000/users/${user.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ savedJobs: updatedSavedJobs })
-      });
-      setSaved(true);
-      toast.success('Job saved!');
+    if (!user) {
+      toast.error('Please login to save jobs');
+      return;
+    }
+
+    if (saved) {
+      toast.info('Job already saved');
+      return;
+    }
+
+    try {
+      // Fetch current user data
+      const userRes = await fetch(`http://localhost:8000/users/${user.id}`);
+      const userData = await userRes.json();
+      const savedJobs = userData.savedJobs || [];
+      
+      if (!savedJobs.includes(job.id)) {
+        const updatedSavedJobs = [...savedJobs, job.id];
+        
+        await fetch(`http://localhost:8000/users/${user.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ savedJobs: updatedSavedJobs })
+        });
+        
+        setSaved(true);
+        toast.success('Job saved successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving job:', error);
+      toast.error('Failed to save job');
     }
   };
 
@@ -194,11 +211,15 @@ const JobPage = ({ deleteJob, applyToJob, saveJob }) => {
                   )}
                   {/* Save Job Button */}
                   <button
-                    className={`mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline ${saved ? 'bg-gray-400 cursor-not-allowed' : ''}`}
+                    className={`mt-4 w-full font-bold py-2 px-4 rounded-full transition-colors ${
+                      saved 
+                        ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                        : 'bg-blue-500 hover:bg-blue-600 text-white'
+                    }`}
                     onClick={handleSaveJob}
                     disabled={saved}
                   >
-                    {saved ? 'Saved' : 'Save Job'}
+                    {saved ? ' Saved' : ' Save Job'}
                   </button>
                 </div>
               )}
