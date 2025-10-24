@@ -1,8 +1,5 @@
-# React Jobs Project (YouTube)
+# Hirely
 
-
-
-<img src="public/screen.png" />
 
 ## Usage
 
