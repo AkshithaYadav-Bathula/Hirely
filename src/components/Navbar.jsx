@@ -59,7 +59,10 @@ const Navbar = () => {
                           My Applications
                         </NavLink>
                         <NavLink to='/saved-jobs' className={linkClass}>
-                          Saved Jobs
+                           Saved Jobs
+                        </NavLink>
+                        <NavLink to='/recommendations' className={linkClass}>
+                          Recommendations
                         </NavLink>
                       </>
                     )}
@@ -126,8 +129,8 @@ const Navbar = () => {
                             <div className="mb-3">
                               <div className="text-xs text-gray-600 mb-1">Skills:</div>
                               <div className="flex flex-wrap gap-2">
-                                {user.skills.map(skill =>
-                                  <span key={skill.id} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-medium">
+                                {user.skills.map((skill, index) =>
+                                  <span key={index} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-medium">
                                     {skill.name}
                                   </span>
                                 )}

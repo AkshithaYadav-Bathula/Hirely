@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect } from 'react';
 
 export const AuthContext = createContext();
@@ -99,12 +98,19 @@ export const AuthProvider = ({ children }) => {
         password: userData.password,
         firstName: userData.firstName,
         lastName: userData.lastName,
+        name: `${userData.firstName} ${userData.lastName}`,
         role: userData.role,
         company: userData.company || null,
         // Add skills field for developers
         skills: userData.role === 'developer' ? userData.skills || [] : undefined,
         createdAt: new Date().toISOString(),
-        isActive: true
+        isActive: true,
+        // Initialize profile fields
+        profilePhoto: '',
+        resume: '',
+        introVideo: '',
+        companyLogo: '',
+        about: ''
       };
 
       // Remove skills field if not a developer
@@ -182,20 +188,35 @@ export const AuthProvider = ({ children }) => {
     return [];
   };
 
-  // Update user profile
+  // Update user profile - FIXED VERSION
   const updateProfile = async (updatedData) => {
+    if (!user) {
+      return { success: false, error: 'No user logged in' };
+    }
+
     try {
+      // Merge current user data with updates
+      const updatedUser = {
+        ...user,
+        ...updatedData,
+        // Make sure we keep critical fields
+        id: user.id,
+        email: user.email,
+        role: user.role
+      };
+
+      // Use PATCH instead of PUT to update only changed fields
       const response = await fetch(`/api/users/${user.id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...user, ...updatedData }),
+        body: JSON.stringify(updatedUser),
       });
 
       if (response.ok) {
-        const updatedUser = await response.json();
-        const userWithoutPassword = { ...updatedUser };
+        const savedUser = await response.json();
+        const userWithoutPassword = { ...savedUser };
         delete userWithoutPassword.password;
         
         setUser(userWithoutPassword);
@@ -203,11 +224,12 @@ export const AuthProvider = ({ children }) => {
         
         return { success: true };
       } else {
-        throw new Error('Failed to update profile');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to update profile');
       }
     } catch (error) {
       console.error('Profile update error:', error);
-      return { success: false, error: 'Profile update failed' };
+      return { success: false, error: error.message || 'Profile update failed' };
     }
   };
 
