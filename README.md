@@ -1,4 +1,4 @@
-# React Jobs Project (YouTube)
+# Hirely : Recruiter Dashboard and Candidate Management System
 
 
 
