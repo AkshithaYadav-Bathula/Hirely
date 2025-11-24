@@ -1,0 +1,233 @@
+{
+  "skills": [
+    {
+      "id": "1",
+      "name": "JavaScript",
+      "category": "Programming Language"
+    },
+    {
+      "id": "2",
+      "name": "React",
+      "category": "Frontend Framework"
+    },
+    {
+      "id": "3",
+      "name": "Node.js",
+      "category": "Backend Technology"
+    },
+    {
+      "id": "4",
+      "name": "Python",
+      "category": "Programming Language"
+    },
+    {
+      "id": "5",
+      "name": "Java",
+      "category": "Programming Language"
+    },
+    {
+      "id": "6",
+      "name": "SQL",
+      "category": "Database"
+    },
+    {
+      "id": "7",
+      "name": "Angular",
+      "category": "Frontend Framework"
+    },
+    {
+      "id": "8",
+      "name": "Vue.js",
+      "category": "Frontend Framework"
+    },
+    {
+      "id": "9",
+      "name": "Express.js",
+      "category": "Backend Technology"
+    },
+    {
+      "id": "10",
+      "name": "MongoDB",
+      "category": "Database"
+    },
+    {
+      "id": "11",
+      "name": "PostgreSQL",
+      "category": "Database"
+    },
+    {
+      "id": "12",
+      "name": "TypeScript",
+      "category": "Programming Language"
+    },
+    {
+      "id": "13",
+      "name": "HTML",
+      "category": "Markup Language"
+    },
+    {
+      "id": "14",
+      "name": "CSS",
+      "category": "Styling"
+    },
+    {
+      "id": "15",
+      "name": "SASS/SCSS",
+      "category": "Styling"
+    },
+    {
+      "id": "16",
+      "name": "Tailwind CSS",
+      "category": "Styling"
+    },
+    {
+      "id": "17",
+      "name": "Bootstrap",
+      "category": "Styling"
+    },
+    {
+      "id": "18",
+      "name": "Redux",
+      "category": "State Management"
+    },
+    {
+      "id": "19",
+      "name": "Context API",
+      "category": "State Management"
+    },
+    {
+      "id": "20",
+      "name": "AWS",
+      "category": "Cloud Platform"
+    },
+    {
+      "id": "21",
+      "name": "Docker",
+      "category": "DevOps"
+    },
+    {
+      "id": "22",
+      "name": "Git",
+      "category": "Version Control"
+    },
+    {
+      "id": "23",
+      "name": "GitHub",
+      "category": "Version Control"
+    },
+    {
+      "id": "24",
+      "name": "REST API",
+      "category": "API Development"
+    },
+    {
+      "id": "25",
+      "name": "GraphQL",
+      "category": "API Development"
+    }
+  ],
+  "companies": [
+    {
+      "id": "c1",
+      "name": "NewTek Solutions",
+      "email": "admin@newteksolutions.com",
+      "password": "newtek@2024",
+      "description": "NewTek Solutions is a leading technology company specializing in web development and digital solutions. We pride ourselves on delivering high-quality products and services to our clients while fostering a collaborative and innovative work environment.",
+      "logo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
+      "website": "https://newteksolutions.com",
+      "industry": "Technology",
+      "sector": "Information Technology",
+      "companySize": "50-200",
+      "numberOfEmployees": 150,
+      "foundedYear": 2015,
+      "headquarters": "Boston, MA",
+      "contactEmail": "contact@teksolutions.com",
+      "contactPhone": "555-555-5555",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [
+        "Health Insurance",
+        "401(k) Matching",
+        "Remote Work Options",
+        "Professional Development"
+      ],
+      "culture": "We foster innovation, collaboration, and continuous learning.",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true,
+      "profileStatus": "published",
+      "publishedAt": "2025-10-01T12:00:00.000Z",
+      "lastModified": "2025-11-24T08:24:40.296Z",
+      "draft": {
+        "name": "NewTek Solutions",
+        "description": "NewTek Solutions is a leading technology company specializing in web development and digital solutions. We pride ourselves on delivering high-quality products and services to our clients.",
+        "logo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
+        "website": "https://newteksolutions.com",
+        "contactEmail": "contact@teksolutions.com",
+        "contactPhone": "555-555-5555",
+        "industry": "Technology",
+        "companySize": "50-200",
+        "socialLinks": {
+          "linkedin": "",
+          "twitter": "",
+          "facebook": ""
+        },
+        "lastModified": "2025-11-24T08:24:40.296Z",
+        "profileStatus": "draft"
+      }
+    },
+
+    {
+      "id": "c2",
+      "name": "Veneer Solutions",
+      "email": "admin@veneer.com",
+      "password": "veneer@2024",
+      "description": "Veneer Solutions is a creative agency specializing in digital design and development. Our team is dedicated to pushing the boundaries of creativity and innovation in every project we undertake.",
+      "logo": "",
+      "website": "https://veneer.com",
+      "industry": "Creative Agency",
+      "sector": "Marketing & Advertising",
+      "companySize": "10-50",
+      "numberOfEmployees": 35,
+      "foundedYear": 2018,
+      "headquarters": "Remote",
+      "contactEmail": "contact@veneer.com",
+      "contactPhone": "555-555-5555",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [
+        "Flexible Hours",
+        "Remote Work",
+        "Creative Freedom"
+      ],
+      "culture": "We value creativity, diversity, and work-life balance.",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true,
+      "profileStatus": "published",
+      "publishedAt": "2025-10-01T12:00:00.000Z",
+      "lastModified": "2025-11-24T08:24:40.296Z",
+      "draft": {
+        "name": "Veneer Solutions",
+        "description": "Veneer Solutions is a creative agency specializing in digital design and development.",
+        "logo": "",
+        "website": "https://veneer.com",
+        "contactEmail": "contact@veneer.com",
+        "contactPhone": "555-555-5555",
+        "industry": "Creative Agency",
+        "companySize": "10-50",
+        "socialLinks": {
+          "linkedin": "",
+          "twitter": "",
+          "facebook": ""
+        },
+        "lastModified": "2025-11-24T08:24:40.296Z",
+        "profileStatus": "draft"
+      }
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { validateEmail } from '../utils/validateEmail';
 
 const AddJobPage = ({ addJobSubmit }) => {
@@ -17,8 +17,8 @@ const AddJobPage = ({ addJobSubmit }) => {
   const [emailError, setEmailError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Pre-fill company name if user has one
   useState(() => {
@@ -64,23 +64,9 @@ const AddJobPage = ({ addJobSubmit }) => {
 
   const submitForm = async (e) => {
     e.preventDefault();
-    
-    // Final validation on submit
-    if (contactEmail && !validateEmail(contactEmail)) {
-      setEmailError('Please enter a valid email address.');
-      return;
-    }
 
-    if (!contactEmail.trim()) {
-      setEmailError('Contact email is required.');
-      return;
-    }
-
-    setLoading(true);
-
-    // determine companyId from logged-in user or company session
-    const storedCompany = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('company') || 'null') : null;
-    const resolvedCompanyId = user?.companyId ?? storedCompany?.id ?? null;
+    // determine companyId from logged-in user (company) or from user.company
+    const resolvedCompanyId = user?.role === 'company' ? user.id : (user?.companyId || null);
 
     const newJob = {
       id: Date.now().toString(),
@@ -89,27 +75,19 @@ const AddJobPage = ({ addJobSubmit }) => {
       location,
       description,
       salary,
-      companyId: resolvedCompanyId, // <-- NEW
-      company: {
-        name: companyName,
-        description: companyDescription,
-        contactEmail,
-        contactPhone,
-      },
-      employerId: user?.id,
+      companyId: resolvedCompanyId,
+      company: resolvedCompanyId ? { id: resolvedCompanyId, name: user?.name || user?.company?.name } : undefined,
+      employerId: user?.role === 'employer' ? user.id : null,
       createdAt: new Date().toISOString(),
       status: 'active'
     };
 
     try {
+      // call the existing handler so other behavior remains
       await addJobSubmit(newJob);
-      toast.success('Job Added Successfully');
-      navigate('/jobs');
-    } catch (error) {
-      toast.error('Failed to add job. Please try again.');
-      console.error('Error adding job:', error);
-    } finally {
-      setLoading(false);
+      navigate('/company-dashboard'); // or '/my-jobs' depending on flow
+    } catch (err) {
+      console.error('Add job failed', err);
     }
   };
 

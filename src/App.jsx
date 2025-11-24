@@ -1,12 +1,11 @@
+import React from 'react';
 import {
   Route,
   createBrowserRouter,
   createRoutesFromElements,
   RouterProvider,
 } from 'react-router-dom';
-import CompanyProfilePage, { companyLoader } from './pages/CompanyProfilePage';
-// ...inside your <Routes> or router config...
-<Route path="/company/:id" element={<CompanyProfilePage />} loader={companyLoader} />
+import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
@@ -24,10 +23,6 @@ import MyApplicationsPage from './pages/MyApplicationsPage';
 import MyJobApplicantsPage from './pages/MyJobApplicantsPage';
 import SavedJobsPage from './pages/SavedJobsPage';
 import RecommendationsPage from './pages/RecommendationsPage';
-// import DeveloperProfilePage from './pages/DeveloperProfilePage';
-// import EmployerProfilePage from './pages/EmployerProfilePage';
-import { useContext } from 'react';
-import { AuthContext } from './context/AuthContext';
 import ProfilePage from './pages/ProfilePage';
 import CompanyDashboardPage from './pages/CompanyDashboardPage';
 
@@ -286,6 +281,8 @@ const App = () => {
           }
         />
         <Route path="/company-dashboard" element={<CompanyDashboardPage />} />
+        {/* use unified ProfilePage for company view (ProfilePage will fetch fallback data if no loader) */}
+        <Route path="/company/:id" element={<ProfilePage />} />
 
         {/* Catch all route */}
         <Route path='*' element={<NotFoundPage />} />

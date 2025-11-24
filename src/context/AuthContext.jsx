@@ -21,10 +21,21 @@ export const AuthProvider = ({ children }) => {
         const savedUser = sessionStorage.getItem('currentUser');
         if (savedUser) {
           const userData = JSON.parse(savedUser);
-          const response = await fetch(`/api/users/${userData.id}`);
+
+          // resolve endpoint by role so company sessions are loaded correctly
+          let endpoint = '/api/users';
+          if (userData.role === 'company') endpoint = '/api/companies';
+          else if (userData.role === 'employer') endpoint = '/api/employers';
+
+          const response = await fetch(`${endpoint}/${userData.id}`);
           if (response.ok) {
-            const user = await response.json();
-            setUser(user);
+            const fetched = await response.json();
+            // remove sensitive fields and keep role
+            const safe = { ...fetched };
+            if (safe.password) delete safe.password;
+            // ensure role remains set for company/employer
+            if (!safe.role && userData.role) safe.role = userData.role;
+            setUser(safe);
           } else {
             sessionStorage.removeItem('currentUser');
           }
@@ -44,6 +55,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       
+      // try users first
       const response = await fetch('/api/users');
       if (!response.ok) {
         throw new Error('Failed to fetch users');
@@ -59,9 +71,46 @@ export const AuthProvider = ({ children }) => {
         setUser(userWithoutPassword);
         sessionStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
         return { success: true };
-      } else {
-        return { success: false, error: 'Invalid email or password' };
       }
+
+      // if not a regular user, try companies endpoint
+      try {
+        const cRes = await fetch('/api/companies');
+        if (cRes.ok) {
+          const companies = await cRes.json();
+          const foundCompany = companies.find(c => (c.email === email || c.contactEmail === email) && (c.password === password || c.companyPassword === password));
+          if (foundCompany) {
+            const companySafe = { ...foundCompany, role: 'company' };
+            delete companySafe.password;
+            delete companySafe.companyPassword;
+            setUser(companySafe);
+            sessionStorage.setItem('currentUser', JSON.stringify(companySafe));
+            return { success: true };
+          }
+        }
+      } catch (err) {
+        console.warn('Companies lookup failed', err);
+      }
+
+      // finally try employers collection (if you have one)
+      try {
+        const eRes = await fetch('/api/employers');
+        if (eRes.ok) {
+          const employers = await eRes.json();
+          const foundEmployer = employers.find(e => e.email === email && e.password === password);
+          if (foundEmployer) {
+            const employerSafe = { ...foundEmployer, role: 'employer' };
+            delete employerSafe.password;
+            setUser(employerSafe);
+            sessionStorage.setItem('currentUser', JSON.stringify(employerSafe));
+            return { success: true };
+          }
+        }
+      } catch (err) {
+        console.warn('Employers lookup failed', err);
+      }
+
+      return { success: false, error: 'Invalid email or password' };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, error: 'Login failed. Please try again.' };

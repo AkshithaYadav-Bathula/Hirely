@@ -1,0 +1,58 @@
+{
+  "applications": [
+    {
+      "id": "3",
+      "jobId": "3",
+      "developerId": "5",
+      "status": "accepted",
+      "appliedAt": "2024-02-05T09:15:00Z",
+      "coverLetter": "I'm excited about the Full Stack Developer opportunity and ready to relocate to Miami.",
+      "resume": "resume_mike_johnson.pdf"
+    },
+    {
+      "id": "4",
+      "jobId": "1",
+      "developerId": "5",
+      "status": "rejected",
+      "appliedAt": "2024-02-07T16:45:00Z",
+      "coverLetter": "I have extensive React experience and would like to join your Boston team.",
+      "resume": "resume_mike_johnson.pdf"
+    },
+    {
+      "id": "1755919257065",
+      "jobId": "1",
+      "developerId": "3",
+      "status": "pending",
+      "appliedAt": "2025-08-23T03:20:57.065Z",
+      "coverLetter": "I am capable",
+      "resume": ""
+    },
+    {
+      "id": "1755930038208",
+      "jobId": "1",
+      "developerId": "3",
+      "status": "accepted",
+      "appliedAt": "2025-08-23T06:20:38.208Z",
+      "coverLetter": "gg",
+      "resume": ""
+    },
+    {
+      "id": "1756446982112",
+      "jobId": "95dd",
+      "developerId": "3",
+      "status": "pending",
+      "appliedAt": "2025-08-29T05:56:22.113Z",
+      "coverLetter": "hulhli;kjljhj",
+      "resume": ""
+    },
+    {
+      "id": "1763164875053",
+      "jobId": "7",
+      "developerId": "3",
+      "status": "pending",
+      "appliedAt": "2025-11-15T00:01:15.053Z",
+      "coverLetter": "hh",
+      "resume": ""
+    }
+  ]
+}
