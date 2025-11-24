@@ -39,6 +39,17 @@ export const AuthProvider = ({ children }) => {
           } else {
             sessionStorage.removeItem('currentUser');
           }
+        } else {
+          // --- NEW: support company sessions saved directly to localStorage (LoginPage stores 'company') ---
+          const storedCompany = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('company') || 'null') : null;
+          if (storedCompany) {
+            const companySafe = { ...storedCompany, role: 'company' };
+            if (companySafe.password) delete companySafe.password;
+            if (companySafe.companyPassword) delete companySafe.companyPassword;
+            setUser(companySafe);
+            // keep sessionStorage in sync for the rest of the app
+            sessionStorage.setItem('currentUser', JSON.stringify(companySafe));
+          }
         }
       } catch (error) {
         console.error('Auth check failed:', error);

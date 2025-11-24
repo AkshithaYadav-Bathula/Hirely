@@ -6,9 +6,6 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './ProfilePage.css';
 
-// --- new: API base for json-server ---
-const API_BASE = 'http://localhost:8000';
-
 const s3Client = new S3Client({
   region: import.meta.env.VITE_AWS_REGION,
   credentials: {
@@ -370,9 +367,6 @@ const ProfilePage = (props) => {
   // existing user-profile code continues to work when no loader data
   const loader = useLoaderData?.() || null;
 
-  // make auth available early so company branch can use `user`
-  const { user, updateUser } = useAuth();
-
   // NEW: support fetching company data when loader not provided (so CompanyProfilePage can be removed)
   const { id: companyParamId } = useParams();
   const [companyFallback, setCompanyFallback] = useState(null);
@@ -384,7 +378,7 @@ const ProfilePage = (props) => {
     // only fetch when route param exists (company/:id)
     if (!companyParamId) return;
 
-    const base = API_BASE; // use shared base
+    const base = 'http://localhost:8000'; // adjust if your API base differs
     let cancelled = false;
     const fetchCompanyData = async () => {
       setCompanyLoading(true);
@@ -444,34 +438,25 @@ const ProfilePage = (props) => {
     const employees = companyData.employees || [];
     const applicationsByJob = companyData.applicationsByJob || {};
 
-    const isOwner = user?.role === 'company' && String(user?.id) === String(company.id);
-    // if owner and there is a draft, preview merged draft values for owner only
-    const displayCompany = isOwner && company.draft ? { ...company, ...company.draft } : company;
-
     return (
       <div className="min-h-screen bg-gray-50">
         <main className="max-w-5xl mx-auto p-6">
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex gap-6 items-start">
               <img
-                src={displayCompany.logo || 'https://placehold.co/80x80?text=Logo'}
-                alt={displayCompany.name}
+                src={company.logo || 'https://placehold.co/80x80?text=Logo'}
+                alt={company.name}
                 className="w-20 h-20 rounded-md object-cover"
               />
               <div>
-                <h1 className="text-2xl font-bold">
-                  {displayCompany.name}
-                  {isOwner && company.draft && (
-                    <span style={{marginLeft:12, color:'#f59e0b', fontWeight:700}}>📝 DRAFT</span>
-                  )}
-                </h1>
-                <p className="text-sm text-gray-600 mt-2">{displayCompany.industry || ''} • {displayCompany.companySize || ''}</p>
-                <p className="text-sm text-gray-500 mt-3">{displayCompany.description || 'No description available.'}</p>
+                <h1 className="text-2xl font-bold">{company.name}</h1>
+                <p className="text-sm text-gray-600 mt-2">{company.industry || ''} • {company.companySize || ''}</p>
+                <p className="text-sm text-gray-500 mt-3">{company.description || 'No description available.'}</p>
                 <div className="mt-3 text-sm text-gray-700">
-                  <div>Email: {displayCompany.contactEmail || 'N/A'}</div>
-                  <div>Phone: {displayCompany.contactPhone || 'N/A'}</div>
-                  {displayCompany.website && (
-                    <div>Website: <a href={displayCompany.website} target="_blank" rel="noreferrer" className="text-indigo-600">{displayCompany.website}</a></div>
+                  <div>Email: {company.contactEmail || 'N/A'}</div>
+                  <div>Phone: {company.contactPhone || 'N/A'}</div>
+                  {company.website && (
+                    <div>Website: <a href={company.website} target="_blank" rel="noreferrer" className="text-indigo-600">{company.website}</a></div>
                   )}
                 </div>
               </div>
@@ -528,7 +513,7 @@ const ProfilePage = (props) => {
   }
 
   // No company data: fall back to existing ProfilePage behavior (developer/employer user profile)
-  // (useAuth already called earlier)
+  const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -744,679 +729,131 @@ const ProfilePage = (props) => {
     setUploading(false);
   };
 
-  // Save Draft (company => companies/:id.draft and write companyDraft into jobs)
-  // const handleSaveDraft = async (showSuccessMessage = false) => {
-  //   setSaving(true);
-  //   try {
-  //     // company-specific draft structure (fields from registration)
-  //     const draftData = {
-  //       name: profile.name || '',
-  //       contactEmail: profile.contactEmail || profile.email || '',
-  //       headquarters: profile.headquarters || profile.headquarters || '',
-  //       contactPhone: profile.contactPhone || '',
-  //       website: profile.website || '',
-  //       industry: profile.industry || '',
-  //       companySize: profile.companySize || '',
-  //       description: profile.about || '',
-  //       logo: profile.companyLogo || '',
-  //       socialLinks: profile.social || profile.socialLinks || {},
-  //       lastModified: new Date().toISOString(),
-  //       profileStatus: 'draft'
-  //     };
-
-  //     const endpoint = user?.role === 'company' ? `${API_BASE}/companies/${user.id}` : `${API_BASE}/users/${user.id}`;
-  //     const res = await fetch(endpoint, {
-  //       method: 'PATCH',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({ draft: draftData, lastModified: draftData.lastModified })
-  //     });
-  //     if (!res.ok) throw new Error('Failed to save draft');
-
-  //     const updated = await res.json();
-  //     setHasDraft(true);
-  //     setIsDraft(true);
-  //     setDraftData(draftData);
-
-  //     // write compact companyDraft into related jobs so listings can show preview
-  //     if (user?.role === 'company') {
-  //       const companyDraftCompact = {
-  //         id: updated.id,
-  //         name: draftData.name,
-  //         logo: draftData.logo,
-  //         description: draftData.description,
-  //         website: draftData.website,
-  //         companySize: draftData.companySize,
-  //         draftSavedAt: draftData.lastModified
-  //       };
-  //       try {
-  //         const jobsResp = await fetch(`${API_BASE}/jobs?companyId=${encodeURIComponent(updated.id)}`);
-  //         if (jobsResp.ok) {
-  //           const jobsList = await jobsResp.json();
-  //           await Promise.all((jobsList || []).map(job =>
-  //             fetch(`${API_BASE}/jobs/${job.id}`, {
-  //               method: 'PATCH',
-  //               headers: { 'Content-Type': 'application/json' },
-  //               body: JSON.stringify({ companyDraft: companyDraftCompact, lastModified: draftData.lastModified })
-  //             })
-  //           ));
-  //         }
-  //       } catch (err) {
-  //         console.warn('Failed to persist companyDraft to jobs', err);
-  //       }
-  //     }
-
-  //     if (showSuccessMessage) alert('Draft saved.');
-  //   } catch (err) {
-  //     console.error(err);
-  //     if (showSuccessMessage) alert('Failed to save draft.');
-  //   } finally {
-  //     setSaving(false);
-  //   }
-  // };
-  // Replace the handleSaveDraft and handlePublish functions in your ProfilePage.jsx with these:
-
-const API_BASE = 'http://localhost:8000';
-
-// // ✅ FIXED: Save Draft Function
-// const handleSaveDraft = async (showSuccessMessage = false) => {
-//   setSaving(true);
-//   try {
-//     const now = new Date().toISOString();
+  // ✅ IMPROVED: Save Draft Function without annoying popups
+  const handleSaveDraft = async (showSuccessMessage = false) => {
+    setSaving(true);
     
-//     // Prepare draft data based on user role
-//     let draftData;
-//     let updatePayload;
-    
-//     if (user?.role === 'company') {
-//       // Company draft structure
-//       draftData = {
-//         name: profile.name || '',
-//         description: profile.about || '',
-//         logo: profile.companyLogo || '',
-//         website: profile.website || '',
-//         contactEmail: profile.contactEmail || profile.email || '',
-//         contactPhone: profile.contactPhone || '',
-//         industry: profile.industry || '',
-//         companySize: profile.companySize || '',
-//         socialLinks: profile.socialLinks || {},
-//         lastModified: now,
-//         profileStatus: 'draft'
-//       };
+    try {
+      const draftData = {
+        name: profile.name || '',
+        profilePhoto: profile.profilePhoto || '',
+        resume: profile.resume || '',
+        introVideo: profile.introVideo || '',
+        companyLogo: profile.companyLogo || '',
+        about: profile.about || '',
+        skills: selectedSkills.map(skill => skill.id),
+        lastModified: new Date().toISOString()
+      };
+
+      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft: draftData })
+      });
+
+      if (response.ok) {
+        setHasDraft(true);
+        setIsDraft(true);
+        setHasUnsavedChanges(false);
+        setDraftData(draftData);
+        setLastAutoSaved(new Date().toISOString());
+        
+        // ✅ Only show alert if manually triggered
+        if (showSuccessMessage) {
+          alert('✅ Draft saved successfully!');
+        }
+        
+        console.log('✅ Draft saved to jobs.json');
+      } else {
+        throw new Error('Failed to save draft');
+      }
+    } catch (error) {
+      console.error('Error saving draft:', error);
       
-//       updatePayload = {
-//         draft: draftData,
-//         lastModified: now
-//       };
-//     } else {
-//       // Developer/Employer draft structure
-//       draftData = {
-//         name: profile.name || '',
-//         profilePhoto: profile.profilePhoto || '',
-//         resume: profile.resume || '',
-//         introVideo: profile.introVideo || '',
-//         about: profile.about || '',
-//         skills: selectedSkills.map(skill => skill.id),
-//         lastModified: now,
-//         profileStatus: 'draft'
-//       };
-      
-//       updatePayload = {
-//         draft: draftData,
-//         draftData: draftData, // Some fields might use this
-//         lastModified: now
-//       };
-//     }
-
-//     // Save to json-server
-//     const endpoint = user?.role === 'company' 
-//       ? `${API_BASE}/companies/${user.id}` 
-//       : `${API_BASE}/users/${user.id}`;
-    
-//     console.log('Saving draft to:', endpoint);
-//     console.log('Draft data:', updatePayload);
-    
-//     const response = await fetch(endpoint, {
-//       method: 'PATCH',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify(updatePayload)
-//     });
-
-//     if (!response.ok) {
-//       throw new Error(`Failed to save draft: ${response.status}`);
-//     }
-
-//     const updated = await response.json();
-//     console.log('Draft saved successfully:', updated);
-
-//     // Update state
-//     setHasDraft(true);
-//     setIsDraft(true);
-//     setDraftData(draftData);
-//     setHasUnsavedChanges(false);
-//     setLastAutoSaved(new Date());
-
-//     // If company, update related jobs with companyDraft
-//     if (user?.role === 'company') {
-//       try {
-//         const companyDraftCompact = {
-//           id: updated.id,
-//           name: draftData.name,
-//           logo: draftData.logo,
-//           description: draftData.description,
-//           website: draftData.website,
-//           companySize: draftData.companySize,
-//           draftSavedAt: now
-//         };
-
-//         const jobsResponse = await fetch(`${API_BASE}/jobs?companyId=${encodeURIComponent(updated.id)}`);
-//         if (jobsResponse.ok) {
-//           const jobs = await jobsResponse.json();
-//           console.log(`Updating ${jobs.length} jobs with company draft`);
-          
-//           await Promise.all(jobs.map(job =>
-//             fetch(`${API_BASE}/jobs/${job.id}`, {
-//               method: 'PATCH',
-//               headers: { 'Content-Type': 'application/json' },
-//               body: JSON.stringify({ 
-//                 companyDraft: companyDraftCompact,
-//                 lastModified: now
-//               })
-//             })
-//           ));
-//         }
-//       } catch (err) {
-//         console.warn('Failed to update jobs with company draft:', err);
-//       }
-//     }
-
-//     if (showSuccessMessage) {
-//       alert('✅ Draft saved successfully! Your changes are not yet visible to others.');
-//     }
-//   } catch (error) {
-//     console.error('Error saving draft:', error);
-//     if (showSuccessMessage) {
-//       alert('❌ Failed to save draft. Please try again.');
-//     }
-//   } finally {
-//     setSaving(false);
-//   }
-// };
-const handleSaveDraft = async (showSuccessMessage = false) => {
-  setSaving(true);
-
-  try {
-    const now = new Date().toISOString();
-
-    let draftData;
-    let updatePayload;
-
-    // =======================
-    // COMPANY DRAFT
-    // =======================
-    if (user?.role === "company") {
-      draftData = {
-        name: profile.name || "",
-        description: profile.about || "",
-        logo: profile.companyLogo || "",
-        website: profile.website || "",
-        contactEmail: profile.contactEmail || profile.email || "",
-        contactPhone: profile.contactPhone || "",
-        industry: profile.industry || "",
-        companySize: profile.companySize || "",
-        socialLinks: profile.socialLinks || {},
-        lastModified: now,
-        profileStatus: "draft"
-      };
-
-      updatePayload = {
-        draft: draftData,
-        lastModified: now
-      };
-    }
-
-    // =======================
-    // DEVELOPER / EMPLOYEE
-    // =======================
-    else {
-      draftData = {
-        name: profile.name || "",
-        profilePhoto: profile.profilePhoto || "",
-        resume: profile.resume || "",
-        introVideo: profile.introVideo || "",
-        about: profile.about || "",
-        skills: selectedSkills.map(s => s.id), // store only IDs
-        lastModified: now,
-        profileStatus: "draft"
-      };
-
-      updatePayload = {
-        draft: draftData,
-        lastModified: now
-      };
-    }
-
-    // =======================
-    // SAVE TO BACKEND
-    // =======================
-    const endpoint =
-      user?.role === "company"
-        ? `${API_BASE}/companies/${user.id}`
-        : `${API_BASE}/users/${user.id}`;
-
-    await fetch(endpoint, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatePayload)
-    });
-
-    // =======================
-    // REFRESH USER FROM JSON-SERVER
-    // =======================
-    const refreshed = await fetch(endpoint).then(r => r.json());
-    updateUser(refreshed);
-
-    // =======================
-    // UPDATE UI (skills + profile)
-    // =======================
-    if (refreshed.draft) {
-      setProfile(prev => ({
-        ...prev,
-        ...refreshed.draft
-      }));
-
-      if (refreshed.draft.skills) {
-        const skillObjs = availableSkills.filter(s =>
-          refreshed.draft.skills.includes(s.id)
-        );
-        setSelectedSkills(skillObjs);
+      // ✅ Only show error alert if manually triggered
+      if (showSuccessMessage) {
+        alert('Failed to save draft. Please try again.');
       }
     }
-
-    // =======================
-    // COMPANY → SYNC JOBS
-    // =======================
-    if (user?.role === "company") {
-      const compact = {
-        id: refreshed.id,
-        name: draftData.name,
-        logo: draftData.logo,
-        website: draftData.website,
-        description: draftData.description,
-        companySize: draftData.companySize,
-        draftSavedAt: now
-      };
-
-      const jobs = await fetch(
-        `${API_BASE}/jobs?companyId=${encodeURIComponent(refreshed.id)}`
-      ).then(r => r.json());
-
-      await Promise.all(
-        jobs.map(job =>
-          fetch(`${API_BASE}/jobs/${job.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              companyDraft: compact,
-              lastModified: now
-            })
-          })
-        )
-      );
-    }
-
-    // =======================
-    // UI FLAGS
-    // =======================
-    setHasDraft(true);
-    setIsDraft(true);
-    setDraftData(draftData);
-    setHasUnsavedChanges(false);
-    setLastAutoSaved(new Date());
-
-    if (showSuccessMessage) {
-      alert("Draft saved successfully!");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Failed to save draft.");
-  } finally {
+    
     setSaving(false);
-  }
-};
+  };
 
-
-  // // Publish (company => set publishedAt, clear draft; update jobs.company, companyPublishedAt, clear companyDraft)
-  // const handlePublish = async () => {
-  //   if (!window.confirm('Publish profile?')) return;
-  //   setSaving(true);
-  //   try {
-  //     const publishedAt = new Date().toISOString();
-  //     const companyPayload = {
-  //       name: profile.name || '',
-  //       description: profile.about || '',
-  //       logo: profile.companyLogo || '',
-  //       website: profile.website || '',
-  //       contactEmail: profile.contactEmail || profile.email || '',
-  //       contactPhone: profile.contactPhone || '',
-  //       industry: profile.industry || '',
-  //       companySize: profile.companySize || '',
-  //       socialLinks: profile.social || profile.socialLinks || {},
-  //       draft: null,
-  //       profileStatus: 'published',
-  //       publishedAt,
-  //       lastModified: publishedAt
-  //     };
-
-  //     if (user?.role === 'company') {
-  //       const res = await fetch(`${API_BASE}/companies/${user.id}`, {
-  //         method: 'PATCH',
-  //         headers: { 'Content-Type': 'application/json' },
-  //         body: JSON.stringify(companyPayload)
-  //       });
-  //       if (!res.ok) throw new Error('Failed to publish company');
-  //       const updatedCompany = await res.json();
-
-  //       // propagate to all jobs for this company: set job.company, clear job.companyDraft, set companyPublishedAt
-  //       try {
-  //         const jobsResp = await fetch(`${API_BASE}/jobs?companyId=${encodeURIComponent(updatedCompany.id)}`);
-  //         if (jobsResp.ok) {
-  //           const jobsList = await jobsResp.json();
-  //           await Promise.all((jobsList || []).map(job =>
-  //             fetch(`${API_BASE}/jobs/${job.id}`, {
-  //               method: 'PATCH',
-  //               headers: { 'Content-Type': 'application/json' },
-  //               body: JSON.stringify({
-  //                 company: {
-  //                   id: updatedCompany.id,
-  //                   name: updatedCompany.name,
-  //                   logo: updatedCompany.logo || '',
-  //                   website: updatedCompany.website || '',
-  //                   industry: updatedCompany.industry || '',
-  //                   companySize: updatedCompany.companySize || ''
-  //                 },
-  //                 companyDraft: null,
-  //                 companyPublishedAt: updatedCompany.publishedAt || publishedAt,
-  //                 lastModified: publishedAt
-  //               })
-  //             })
-  //           ));
-  //         }
-  //       } catch (err) {
-  //         console.warn('Failed to update jobs with published company', err);
-  //       }
-
-  //       // sync session/auth and UI
-  //       try {
-  //         updateUser?.({ ...updatedCompany, role: 'company' });
-  //         sessionStorage.setItem('currentUser', JSON.stringify({ ...updatedCompany, role: 'company' }));
-  //         localStorage.setItem('company', JSON.stringify(updatedCompany));
-  //       } catch (e) { /**/ }
-
-  //       setHasDraft(false);
-  //       setIsDraft(false);
-  //       setIsEditing(false);
-  //       alert('Company published.');
-  //       window.location.reload();
-  //     } else {
-  //       // existing developer/employer publish (unchanged)
-  //       const res2 = await fetch(`http://localhost:8000/users/${user.id}`, {
-  //         method: 'PATCH',
-  //         headers: { 'Content-Type': 'application/json' },
-  //         body: JSON.stringify({ /* existing published data */ })
-  //       });
-  //       if (res2.ok) {
-  //         const updatedUser = await res2.json();
-  //         updateUser(updatedUser);
-  //         setHasDraft(false);
-  //         setIsDraft(false);
-  //         setIsEditing(false);
-  //         alert('Profile published.');
-  //         window.location.reload();
-  //       } else {
-  //         throw new Error('Failed to publish user');
-  //       }
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert('Failed to publish.');
-  //   } finally {
-  //     setSaving(false);
-  //   }
-  // };
-const handlePublish = async () => {
-  if (
-    !window.confirm(
-      "Are you sure you want to publish? All draft changes will go live."
-    )
-  ) {
-    return;
-  }
-
-  setSaving(true);
-
-  try {
-    const now = new Date().toISOString();
-
-    let publishPayload;
-
-    // ====================================================
-    // COMPANY PUBLISH
-    // ====================================================
-    if (user?.role === "company") {
-      publishPayload = {
-        name: profile.name || "",
-        description: profile.about || "",
-        logo: profile.companyLogo || "",
-        website: profile.website || "",
-        contactEmail: profile.contactEmail || profile.email || "",
-        contactPhone: profile.contactPhone || "",
-        industry: profile.industry || "",
-        companySize: profile.companySize || "",
-        socialLinks: profile.socialLinks || {},
-        draft: null, // remove draft
-        profileStatus: "published",
-        publishedAt: now,
-        lastModified: now
-      };
+  // ✅ PUBLISH PROFILE
+  const handlePublish = async () => {
+    if (!window.confirm('Are you sure you want to publish this profile? This will replace your current published version.')) {
+      return;
     }
 
-    // ====================================================
-    // DEVELOPER / EMPLOYEE PUBLISH
-    // ====================================================
-    else {
-      publishPayload = {
-        name: profile.name || "",
-        profilePhoto: profile.profilePhoto || "",
-        resume: profile.resume || "",
-        introVideo: profile.introVideo || "",
-        about: profile.about || "",
-        skills: selectedSkills.map(s => s.id),
-        draft: null,       // remove draft
-        draftData: null,   // remove legacy field
-        profileStatus: "published",
-        publishedAt: now,
-        lastModified: now
-      };
-    }
-
-    // ====================================================
-    // SAVE PUBLISHED DATA BACKEND
-    // ====================================================
-    const endpoint =
-      user?.role === "company"
-        ? `${API_BASE}/companies/${user.id}`
-        : `${API_BASE}/users/${user.id}`;
-
-    await fetch(endpoint, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(publishPayload)
-    });
-
-    // ====================================================
-    // REFRESH USER
-    // ====================================================
-    const refreshed = await fetch(endpoint).then(r => r.json());
-    updateUser(refreshed);
-
-    // ====================================================
-    // COMPANY → PROPAGATE PUBLISHED DATA INTO JOB LISTINGS
-    // ====================================================
-    if (user?.role === "company") {
-      const publicCompany = {
-        id: refreshed.id,
-        name: refreshed.name,
-        logo: refreshed.logo || "",
-        website: refreshed.website || "",
-        industry: refreshed.industry || "",
-        companySize: refreshed.companySize || ""
+    setSaving(true);
+    
+    try {
+      const publishedData = {
+        name: profile.name || '',
+        profilePhoto: profile.profilePhoto || '',
+        resume: profile.resume || '',
+        introVideo: profile.introVideo || '',
+        companyLogo: profile.companyLogo || '',
+        about: profile.about || '',
+        skills: selectedSkills.map(skill => skill.id),
+        profileStatus: 'published',
+        publishedAt: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+        draft: null
       };
 
-      const jobs = await fetch(
-        `${API_BASE}/jobs?companyId=${encodeURIComponent(refreshed.id)}`
-      ).then(r => r.json());
+      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(publishedData)
+      });
 
-      await Promise.all(
-        jobs.map(job =>
-          fetch(`${API_BASE}/jobs/${job.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              company: publicCompany,
-              companyDraft: null,
-              companyPublishedAt: now,
-              lastModified: now
-            })
-          })
-        )
-      );
+      if (response.ok) {
+        const updatedUser = await response.json();
+        updateUser(updatedUser);
+        setHasDraft(false);
+        setIsDraft(false);
+        setIsEditing(false);
+        setHasUnsavedChanges(false);
+        alert('🎉 Profile published successfully!');
+        window.location.reload();
+      } else {
+        throw new Error('Failed to publish profile');
+      }
+    } catch (error) {
+      console.error('Error publishing profile:', error);
+      alert('Failed to publish profile');
     }
-
-    // ====================================================
-    // CLEAN UI STATE
-    // ====================================================
-    setHasDraft(false);
-    setIsDraft(false);
-    setDraftData(null);
-    setIsEditing(false);
-    setHasUnsavedChanges(false);
-
-    alert("🎉 Profile published successfully!");
-
-    // refresh UI
-    window.location.reload();
-  } catch (error) {
-    console.error("Publish failed:", error);
-    alert("❌ Publishing failed. Please try again.");
-  } finally {
+    
     setSaving(false);
-  }
-};
+  };
 
-
-const handleDiscardDraft = async () => {
-  if (
-    !window.confirm(
-      "⚠️ Are you sure you want to discard all draft changes? This cannot be undone."
-    )
-  ) {
-    return;
-  }
-
-  setSaving(true);
-
-  try {
-    const now = new Date().toISOString();
-
-    const endpoint =
-      user?.role === "company"
-        ? `${API_BASE}/companies/${user.id}`
-        : `${API_BASE}/users/${user.id}`;
-
-    // =====================================
-    // CLEAR DRAFT FROM USER / COMPANY
-    // =====================================
-    await fetch(endpoint, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        draft: null,
-        draftData: null,
-        lastModified: now
-      })
-    });
-
-    // =====================================
-    // COMPANY → REMOVE DRAFT FROM JOB LISTINGS
-    // =====================================
-    if (user?.role === "company") {
-      const jobs = await fetch(
-        `${API_BASE}/jobs?companyId=${encodeURIComponent(user.id)}`
-      ).then(r => r.json());
-
-      await Promise.all(
-        jobs.map(job =>
-          fetch(`${API_BASE}/jobs/${job.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              companyDraft: null,
-              lastModified: now
-            })
-          })
-        )
-      );
+  // ✅ DISCARD DRAFT
+  const handleDiscardDraft = async () => {
+    if (!window.confirm('Are you sure you want to discard all draft changes?')) {
+      return;
     }
 
-    // =====================================
-    // REFRESH USER & UPDATE UI
-    // =====================================
-    const refreshed = await fetch(endpoint).then(r => r.json());
-    updateUser(refreshed);
+    try {
+      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft: null })
+      });
 
-    setHasDraft(false);
-    setIsDraft(false);
-    setDraftData(null);
-    setIsEditing(false);
-    setHasUnsavedChanges(false);
-
-    alert("🗑️ Draft discarded successfully!");
-    window.location.reload();
-  } catch (error) {
-    console.error("Discard draft failed:", error);
-    alert("❌ Failed to discard draft. Please try again.");
-  } finally {
-    setSaving(false);
-  }
-};
-
-  // const handleDiscardDraft = async () => {
-  //   if (!window.confirm('Are you sure you want to discard all draft changes?')) {
-  //     return;
-  //   }
-
-  //   try {
-  //     const endpoint = user?.role === 'company' ? `http://localhost:8000/companies/${user.id}` : `/api/users/${user.id}`;
-  //     const response = await fetch(endpoint, {
-  //       method: 'PATCH',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({ draft: null })
-  //     });
-
-  //     if (response.ok) {
-  //       setHasDraft(false);
-  //       setIsDraft(false);
-  //       setIsEditing(false);
-  //       setHasUnsavedChanges(false);
-  //       alert('Draft discarded');
-  //       window.location.reload();
-  //     }
-  //   } catch (error) {
-  //     console.error('Error discarding draft:', error);
-  //     alert('Failed to discard draft');
-  //   }
-  // };
-
+      if (response.ok) {
+        setHasDraft(false);
+        setIsDraft(false);
+        setIsEditing(false);
+        setHasUnsavedChanges(false);
+        alert('Draft discarded');
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error discarding draft:', error);
+      alert('Failed to discard draft');
+    }
+  };
 
   const modules = {
     toolbar: [
@@ -2184,7 +1621,6 @@ const handleDiscardDraft = async () => {
                   </div>
                   <div style={{display: 'flex', gap: '10px'}}>
                     <button
-                      type="button"
                       onClick={() => openModal(profile.introVideo, 'video', getFileName(profile.introVideo))}
                       style={{
                         background: '#28a745',
@@ -2200,7 +1636,7 @@ const handleDiscardDraft = async () => {
                       🔍 Full Screen
                     </button>
                     <a 
-                      href={profile.introVideo ? profile.introVideo.split('?')[0] : '#'}
+                      href={profile.introVideo.split('?')[0]}
                       download
                       style={{
                         background: '#5a67d8',

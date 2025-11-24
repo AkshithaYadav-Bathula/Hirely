@@ -559,16 +559,17 @@
       ],
       "createdAt": "2024-01-03T00:00:00Z",
       "isActive": true,
-      "name": "Akshitha Yadav B",
+      "name": "Akshitha Yadav BATH",
       "profilePhoto": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/3/images/gh.jpg?t=1761319000269",
       "resume": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/Akshitha/resumes/Test1-Akshitha.docx?t=1760171917933",
       "introVideo": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/3/videos/1.mp4?t=1760458628793",
       "about": "<p>Hii I am Akshitha, An Aspiring <strong>Full Stack Developer </strong></p>",
       "profileStatus": "published",
-      "publishedAt": "2025-11-24T10:24:23.692Z",
-      "lastModified": "2025-11-24T10:24:23.692Z",
+      "publishedAt": "2025-11-24T12:34:47.935Z",
+      "lastModified": "2025-11-24T12:34:47.935Z",
       "draft": null,
-      "draftData": null
+      "draftData": null,
+      "companyLogo": ""
     }
   ],
   "applications": [

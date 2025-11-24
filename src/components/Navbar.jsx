@@ -8,6 +8,10 @@ const Navbar = () => {
   const [showProfile, setShowProfile] = useState(false);
   const dropdownRef = useRef();
 
+  // detect company session saved to localStorage (LoginPage stores this)
+  const storedCompany = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('company') || 'null') : null;
+  const isCompanySession = !!storedCompany && localStorage.getItem('accountType') === 'company';
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -26,6 +30,15 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleCompanyLogout = () => {
+    localStorage.removeItem('company');
+    localStorage.removeItem('accountType');
+    // also clear sessionStorage to be safe
+    sessionStorage.removeItem('currentUser');
+    // reload or navigate to home so UI updates
+    window.location.href = '/';
   };
 
   return (
@@ -171,13 +184,36 @@ const Navbar = () => {
                   </>
                 ) : (
                   <>
-                    {/* Authentication routes for non-logged-in users */}
-                    <NavLink to='/login' className={linkClass}>
-                      Login
-                    </NavLink>
-                    <NavLink to='/register' className={linkClass}>
-                      Register
-                    </NavLink>
+                    {/* Not authenticated: either show company quick menu or login/register */}
+                    {!isCompanySession ? (
+                      <>
+                        <NavLink to='/login' className={linkClass}>
+                          Login
+                        </NavLink>
+                        <NavLink to='/register' className={linkClass}>
+                          Register
+                        </NavLink>
+                      </>
+                    ) : (
+                      <div className='relative flex items-center'>
+                        <button
+                          className='text-white text-sm font-semibold focus:outline-none'
+                          onClick={() => setShowProfile((prev) => !prev)}
+                        >
+                          Hi, {storedCompany?.name?.split(' ')[0]}
+                        </button>
+                        {showProfile && (
+                          <div ref={dropdownRef} className="absolute top-12 right-0 bg-white rounded-xl shadow-lg p-4 min-w-[260px] z-50 border border-indigo-100">
+                            <div className="font-semibold text-indigo-700 mb-1">{storedCompany?.name}</div>
+                            <div className="text-xs text-gray-500 mb-3">{storedCompany?.contactEmail || storedCompany?.email}</div>
+                            <div className="flex gap-2">
+                              <button onClick={() => window.location.href = '/company-dashboard'} className="flex-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-2 rounded text-sm">Dashboard</button>
+                              <button onClick={handleCompanyLogout} className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded text-sm">Logout</button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
