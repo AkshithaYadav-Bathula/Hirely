@@ -126,6 +126,286 @@
       "category": "API Development"
     }
   ],
+  "companies": [
+    {
+      "id": "c1",
+      "name": "NewTek Solutions",
+      "email": "admin@newteksolutions.com",
+      "password": "newtek@2024",
+      "description": "NewTek Solutions is a leading technology company specializing in web development and digital solutions. We pride ourselves on delivering high-quality products and services to our clients while fostering a collaborative and innovative work environment.",
+      "logo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
+      "website": "https://newteksolutions.com",
+      "industry": "Technology",
+      "sector": "Information Technology",
+      "companySize": "50-200",
+      "numberOfEmployees": 150,
+      "foundedYear": 2015,
+      "headquarters": "Boston, MA",
+      "contactEmail": "contact@teksolutions.com",
+      "contactPhone": "555-555-5555",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [
+        "Health Insurance",
+        "401(k) Matching",
+        "Remote Work Options",
+        "Professional Development"
+      ],
+      "culture": "We foster innovation, collaboration, and continuous learning.",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    {
+      "id": "c2",
+      "name": "Veneer Solutions",
+      "email": "admin@veneer.com",
+      "password": "veneer@2024",
+      "description": "Veneer Solutions is a creative agency specializing in digital design and development. Our team is dedicated to pushing the boundaries of creativity and innovation in every project we undertake.",
+      "logo": "",
+      "website": "https://veneer.com",
+      "industry": "Creative Agency",
+      "sector": "Marketing & Advertising",
+      "companySize": "10-50",
+      "numberOfEmployees": 35,
+      "foundedYear": 2018,
+      "headquarters": "Remote",
+      "contactEmail": "contact@veneer.com",
+      "contactPhone": "555-555-5555",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [
+        "Flexible Hours",
+        "Remote Work",
+        "Creative Freedom"
+      ],
+      "culture": "We value creativity, diversity, and work-life balance.",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    {
+      "id": "c3",
+      "name": "Dolor Cloud",
+      "email": "admin@dolorcloud.com",
+      "password": "dolor@2024",
+      "description": "Dolor Cloud is a leading cloud computing company that specializes in providing innovative solutions for businesses of all sizes. Join us in shaping the future of cloud technology.",
+      "logo": "",
+      "website": "https://dolorcloud.com",
+      "industry": "Cloud Computing",
+      "sector": "Information Technology",
+      "companySize": "200-500",
+      "numberOfEmployees": 350,
+      "foundedYear": 2012,
+      "headquarters": "Miami, FL",
+      "contactEmail": "contact@dolorcloud.com",
+      "contactPhone": "555-555-5555",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [
+        "Competitive Salary",
+        "Stock Options",
+        "Health & Wellness Programs"
+      ],
+      "culture": "Innovation-driven, customer-focused, and team-oriented.",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    {
+      "id": "c4",
+      "name": "Alpha Elite",
+      "email": "admin@alphaelite.com",
+      "password": "alpha@2024",
+      "description": "Alpha Elite is a dynamic startup specializing in cutting-edge web solutions. We pride ourselves on fostering a collaborative and innovative work environment where creativity thrives.",
+      "logo": "",
+      "website": "https://alphaelite.com",
+      "industry": "Web Development",
+      "sector": "Information Technology",
+      "companySize": "10-50",
+      "numberOfEmployees": 25,
+      "foundedYear": 2020,
+      "headquarters": "San Diego, CA",
+      "contactEmail": "contact@alphaelite.com",
+      "contactPhone": "555-555-5555",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [
+        "Equity Participation",
+        "Flexible Schedule",
+        "Learning Budget"
+      ],
+      "culture": "Fast-paced, entrepreneurial, and collaborative.",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    {
+      "id": "c5",
+      "name": "Browning Technologies",
+      "description": "Browning Technologies is a rapidly growing technology company specializing in e-commerce solutions. We offer a dynamic and collaborative work environment where innovation is encouraged.",
+      "logo": "",
+      "website": "https://browningtech.com",
+      "industry": "E-commerce",
+      "companySize": "100-200",
+      "foundedYear": 2016,
+      "headquarters": "Brooklyn, NY",
+      "contactEmail": "contact@browningtech.com",
+      "contactPhone": "555-555-5555",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [
+        "Comprehensive Benefits",
+        "Career Growth",
+        "Team Events"
+      ],
+      "culture": "Collaborative, innovative, and growth-focused.",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    {
+      "id": "c6",
+      "name": "Tech Innovations Inc",
+      "description": "Tech Innovations Inc is a Fortune 500 company focused on developing cutting-edge software solutions for enterprise clients worldwide.",
+      "logo": "",
+      "website": "https://techinnovations.com",
+      "industry": "Enterprise Software",
+      "companySize": "500+",
+      "foundedYear": 2005,
+      "headquarters": "Seattle, WA",
+      "contactEmail": "careers@techinnovations.com",
+      "contactPhone": "555-123-4567",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [
+        "Full Benefits Package",
+        "Retirement Plans",
+        "Professional Development",
+        "Gym Membership"
+      ],
+      "culture": "Enterprise-grade excellence with startup agility.",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    {
+      "id": "c7",
+      "name": "Starter Tech",
+      "description": "A startup helping new developers grow into professional roles.",
+      "logo": "",
+      "website": "https://startertech.com",
+      "industry": "Education Technology",
+      "companySize": "1-10",
+      "foundedYear": 2022,
+      "headquarters": "Austin, TX",
+      "contactEmail": "hr@startertech.com",
+      "contactPhone": "555-222-1111",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [
+        "Mentorship Program",
+        "Learning Resources",
+        "Flexible Hours"
+      ],
+      "culture": "Supportive, educational, and nurturing environment for new developers.",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    {
+      "id": "c8",
+      "name": "L4G Solutions Private Limited",
+      "description": "L4G – Learning for Growth is a one-stop integrated platform that creates an end-to-end ecosystem for Education, Skill, Employability, and Entrepreneurship.",
+      "logo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
+      "website": "https://l4gsolutions.com",
+      "industry": "Education & Training",
+      "companySize": "50-100",
+      "foundedYear": 2019,
+      "headquarters": "Bangalore, India",
+      "contactEmail": "info@l4gsolutions.com",
+      "contactPhone": "555-777-8888",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [
+        "Skill Development Programs",
+        "Career Counseling",
+        "Health Insurance"
+      ],
+      "culture": "Growth-oriented, learning-focused, and entrepreneurial.",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true
+    },
+    {
+      "id": "c1761334319607",
+      "name": "L4g Solutions Private Limited",
+      "email": "l4g@gmail.com",
+      "password": "l4g123",
+      "description": "",
+      "logo": "",
+      "website": "",
+      "industry": "Technology",
+      "sector": "",
+      "companySize": "1-10",
+      "numberOfEmployees": 0,
+      "foundedYear": 2025,
+      "headquarters": "Hyd, India",
+      "contactEmail": "l4g@gmail.com",
+      "contactPhone": "5200001",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [],
+      "culture": "",
+      "createdAt": "2025-10-24T19:31:59.607Z",
+      "isActive": true
+    },
+    {
+      "id": "c1763165864098",
+      "name": "AKH Technologies",
+      "email": "akh@gmail.com",
+      "password": "Akh@123",
+      "description": "",
+      "logo": "",
+      "website": "",
+      "industry": "",
+      "sector": "",
+      "companySize": "1-10",
+      "numberOfEmployees": 0,
+      "foundedYear": 2025,
+      "headquarters": "India",
+      "contactEmail": "akh@gmail.com",
+      "contactPhone": "",
+      "socialLinks": {
+        "linkedin": "",
+        "twitter": "",
+        "facebook": ""
+      },
+      "benefits": [],
+      "culture": "",
+      "createdAt": "2025-11-15T00:17:44.099Z",
+      "isActive": true
+    }
+  ],
   "jobs": [
     {
       "id": "1",
@@ -134,12 +414,7 @@
       "description": "We are seeking a talented Front-End Developer to join our team in Boston, MA. The ideal candidate will have strong skills in HTML, CSS, and JavaScript, with experience working with modern JavaScript frameworks such as React or Angular.",
       "location": "Boston, MA",
       "salary": "$70K - $80K",
-      "company": {
-        "name": "NewTek Solutions",
-        "description": "NewTek Solutions is a leading technology company specializing in web development and digital solutions. We pride ourselves on delivering high-quality products and services to our clients while fostering a collaborative and innovative work environment.",
-        "contactEmail": "contact@teksolutions.com",
-        "contactPhone": "555-555-5555"
-      },
+      "companyId": "c1",
       "employerId": "2",
       "createdAt": "2024-01-15T10:30:00Z",
       "status": "active",
@@ -170,12 +445,7 @@
       "description": "Join our team as a Frontend Developer! We are looking for a motivated individual with a passion for crafting beautiful and functional user interfaces. Experience with React, Vue, or Angular is a plus.",
       "location": "Remote",
       "salary": "$60K - $70K",
-      "company": {
-        "name": "Veneer Solutions",
-        "description": "Veneer Solutions is a creative agency specializing in digital design and development. Our team is dedicated to pushing the boundaries of creativity and innovation in every project we undertake.",
-        "contactEmail": "contact@veneer.com",
-        "contactPhone": "555-555-5555"
-      },
+      "companyId": "c2",
       "employerId": "2",
       "createdAt": "2024-01-20T14:15:00Z",
       "status": "active",
@@ -200,12 +470,7 @@
       "description": "Exciting opportunity for a Full-Stack Developer in bustling Miami, FL. We are seeking a versatile developer with experience in both front-end and back-end technologies. Join our dynamic team and make a significant impact!",
       "location": "Miami, FL",
       "salary": "$80K - $90K",
-      "company": {
-        "name": "Dolor Cloud",
-        "description": "Dolor Cloud is a leading cloud computing company that specializes in providing innovative solutions for businesses of all sizes. Join us in shaping the future of cloud technology.",
-        "contactEmail": "contact@dolorcloud.com",
-        "contactPhone": "555-555-5555"
-      },
+      "companyId": "c3",
       "employerId": "4",
       "createdAt": "2024-01-25T09:45:00Z",
       "status": "active",
@@ -241,12 +506,7 @@
       "description": "Part-time opportunity for a React Front-End Developer in beautiful San Diego, CA. We are looking for a skilled developer to join our team and contribute to exciting projects. Flexible schedule and competitive compensation offered.",
       "location": "San Diego, CA",
       "salary": "$90K - $100K",
-      "company": {
-        "name": "Alpha Elite",
-        "description": "Alpha Elite is a dynamic startup specializing in cutting-edge web solutions. We pride ourselves on fostering a collaborative and innovative work environment where creativity thrives.",
-        "contactEmail": "contact@alphaelite.com",
-        "contactPhone": "555-555-5555"
-      },
+      "companyId": "c4",
       "employerId": "4",
       "createdAt": "2024-02-01T16:20:00Z",
       "status": "active",
@@ -277,11 +537,18 @@
       "description": "Join our team as a JavaScript Developer in the heart of Brooklyn, NY. We are seeking a enthusiastic developer with a strong understanding of JavaScript and modern web technologies. Competitive salary and benefits package available.",
       "location": "Brooklyn, NY",
       "salary": "$100K - $125K",
+      "companyId": "c5",
       "company": {
+        "id": "c5",
         "name": "Browning Technologies",
         "description": "Browning Technologies is a rapidly growing technology company specializing in e-commerce solutions. We offer a dynamic and collaborative work environment where innovation is encouraged.",
+        "website": "https://browningtech.com",
+        "industry": "E-commerce",
+        "companySize": "100-200",
+        "headquarters": "Brooklyn, NY",
         "contactEmail": "contact@browningtech.com",
-        "contactPhone": "555-555-5555"
+        "contactPhone": "555-555-5555",
+        "logo": ""
       },
       "employerId": "2",
       "createdAt": "2024-02-05T11:10:00Z",
@@ -313,12 +580,7 @@
       "description": "We are looking for a Senior Software Engineer to lead our development team. Must have 5+ years of experience with modern web technologies and team leadership skills.",
       "location": "Seattle, WA",
       "salary": "$125K - $150K",
-      "company": {
-        "name": "Tech Innovations Inc",
-        "description": "Tech Innovations Inc is a Fortune 500 company focused on developing cutting-edge software solutions for enterprise clients worldwide.",
-        "contactEmail": "careers@techinnovations.com",
-        "contactPhone": "555-123-4567"
-      },
+      "companyId": "c6",
       "employerId": "4",
       "createdAt": "2024-02-10T13:30:00Z",
       "status": "active",
@@ -364,12 +626,7 @@
       "description": "Entry-level role for fresh graduates with basic knowledge of HTML, CSS, and JavaScript.",
       "location": "Austin, TX",
       "salary": "$30K - $40K",
-      "company": {
-        "name": "Starter Tech",
-        "description": "A startup helping new developers grow into professional roles.",
-        "contactEmail": "hr@startertech.com",
-        "contactPhone": "555-222-1111"
-      },
+      "companyId": "c7",
       "employerId": "2",
       "createdAt": "2024-02-15T10:00:00Z",
       "status": "active",
@@ -395,13 +652,8 @@
       "location": "Bangalore",
       "description": "Understand java ",
       "salary": "$125K - 150K",
-      "company": {
-        "name": "NewTek Solutions",
-        "description": "",
-        "contactEmail": "abb@gmail.com",
-        "contactPhone": ""
-      },
-      "employerId": "2",
+      "companyId": "c8",
+      "employerId": "1755918317158",
       "createdAt": "2025-08-23T03:37:02.066Z",
       "status": "active"
     }
@@ -414,7 +666,7 @@
       "firstName": "Admin",
       "lastName": "User",
       "role": "admin",
-      "company": null,
+      "companyId": null,
       "createdAt": "2024-01-01T00:00:00Z",
       "isActive": true
     },
@@ -425,16 +677,12 @@
       "firstName": "John",
       "lastName": "Employer",
       "role": "employer",
-      "company": "NewTek Solutions",
+      "companyId": "c1",
+      "position": "HR Manager",
       "createdAt": "2024-01-02T00:00:00Z",
       "isActive": true,
-      "name": "L4G Solutions Private Limited ",
       "profilePhoto": "",
-      "resume": "",
-      "introVideo": "",
-      "companyLogo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
-      "about": "<p><strong style=\"color: rgb(118, 118, 118);\">L4G – Learning for Growth</strong><span style=\"color: rgb(71, 71, 71);\">&nbsp;is a one-stop integrated platform that creates an end-to-end ecosystem for Education, Skill, Employability, and Entrepreneurship.</span></p>",
-      "skills": [],
+      "about": "Experienced HR professional passionate about finding the right talent.",
       "profileStatus": "published",
       "publishedAt": "2025-10-14T14:53:30.147Z",
       "draftData": null
@@ -446,14 +694,16 @@
       "firstName": "Akshitha",
       "lastName": "Developer",
       "role": "developer",
-      "company": null,
+      "companyId": null,
       "skills": [
         "1"
       ],
       "savedJobs": [
         "2",
         "3",
-        "4"
+        "4",
+        "7",
+        "1"
       ],
       "createdAt": "2024-01-03T00:00:00Z",
       "isActive": true,
@@ -461,7 +711,6 @@
       "profilePhoto": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/3/images/gh.jpg?t=1761319000269",
       "resume": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/Akshitha/resumes/Test1-Akshitha.docx?t=1760171917933",
       "introVideo": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/3/videos/1.mp4?t=1760458628793",
-      "companyLogo": "",
       "about": "<p>Hii I am Akshitha, An Aspiring <strong>Full Stack Developer jk</strong></p>",
       "profileStatus": "published",
       "publishedAt": "2025-10-24T15:40:55.022Z",
@@ -476,7 +725,8 @@
       "firstName": "Sarah",
       "lastName": "Wilson",
       "role": "employer",
-      "company": "Tech Innovations Inc",
+      "companyId": "c6",
+      "position": "Talent Acquisition Lead",
       "createdAt": "2024-01-04T00:00:00Z",
       "isActive": true
     },
@@ -487,7 +737,7 @@
       "firstName": "Mike",
       "lastName": "Johnson",
       "role": "developer",
-      "company": null,
+      "companyId": null,
       "skills": [
         {
           "id": "1",
@@ -518,7 +768,7 @@
       "firstName": "AKSHITHA YADAV",
       "lastName": "BATHULA",
       "role": "developer",
-      "company": null,
+      "companyId": null,
       "skills": [
         {
           "id": "1",
@@ -542,7 +792,7 @@
       "firstName": "test",
       "lastName": "test",
       "role": "developer",
-      "company": null,
+      "companyId": null,
       "skills": [
         {
           "id": "4",
@@ -566,7 +816,8 @@
       "firstName": "AKSHITHA YADAV",
       "lastName": "BATHULA",
       "role": "employer",
-      "company": "abb@gmail.com",
+      "companyId": "c8",
+      "position": "Recruiter",
       "createdAt": "2025-08-23T03:05:17.158Z",
       "isActive": true
     }
@@ -616,6 +867,15 @@
       "resume": "",
       "status": "pending",
       "appliedAt": "2025-08-29T05:56:22.113Z"
+    },
+    {
+      "id": "1763164875053",
+      "jobId": "7",
+      "developerId": "3",
+      "coverLetter": "hh",
+      "resume": "",
+      "status": "pending",
+      "appliedAt": "2025-11-15T00:01:15.053Z"
     }
   ]
 }

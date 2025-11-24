@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -7,92 +7,298 @@ import { validateEmail } from '../utils/validateEmail';
 
 const RegisterPage = () => {
   const [emailError, setEmailError] = useState('');
+  const [companies, setCompanies] = useState([]);
+  const [showNewCompanyForm, setShowNewCompanyForm] = useState(false);
+  const [accountType, setAccountType] = useState('user'); // 'user' or 'company'
+  
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    // Common fields
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'developer', // default role
-    company: '',
-    skills: [] // New field for developer skills
+    
+    // User-specific fields
+    firstName: '',
+    lastName: '',
+    role: 'developer', // developer or employer
+    companyId: '', // for employers joining existing company
+    position: '', // for employers
+    skills: [], // for developers
+    
+    // Company-specific fields
+    companyName: '',
+    companyEmail: '',
+    companyPassword: '',
+    confirmCompanyPassword: '',
+    headquarters: '',
+    contactPhone: '',
+    website: '',
+    industry: '',
+    companySize: '1-10',
+    description: '',
+    linkedin: '',
+    twitter: '',
+    facebook: ''
   });
+  
   const [loading, setLoading] = useState(false);
   
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  // Fetch companies when employer is selected
+  useEffect(() => {
+    if (accountType === 'user' && formData.role === 'employer') {
+      fetchCompanies();
+    }
+  }, [accountType, formData.role]);
+
+  const fetchCompanies = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/companies');
+      const data = await res.json();
+      setCompanies(data);
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+    }
+  };
+
   const handleChange = (e) => {
-    if (e.target.name === 'email') {
+    const { name, value } = e.target;
+    
+    if (name === 'email' || name === 'companyEmail') {
       setEmailError('');
     }
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    
+    // Handle company selection
+    if (name === 'companyId') {
+      if (value === 'new') {
+        setShowNewCompanyForm(true);
+        setFormData({ ...formData, companyId: '' });
+      } else {
+        setShowNewCompanyForm(false);
+        setFormData({ ...formData, companyId: value });
+      }
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSkillsChange = (skills) => {
-    setFormData({
-      ...formData,
-      skills: skills
-    });
+    setFormData({ ...formData, skills: skills });
   };
 
   const handleSubmit = async (e) => {
-    if (!validateEmail(formData.email)) {
-      setEmailError('Please enter a valid email address.');
-      return;
-    }
     e.preventDefault();
 
-    // Validation
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
+    // Validation based on account type
+    if (accountType === 'company') {
+      // Company registration validation
+      if (!validateEmail(formData.companyEmail)) {
+        setEmailError('Please enter a valid company email address');
+        toast.error('Please enter a valid company email address');
+        return;
+      }
 
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
+      if (formData.companyPassword !== formData.confirmCompanyPassword) {
+        toast.error('Passwords do not match');
+        return;
+      }
 
-    // For developers, require at least one skill
-    if (formData.role === 'developer' && formData.skills.length === 0) {
-      toast.error('Please select at least one skill');
-      return;
-    }
+      if (formData.companyPassword.length < 6) {
+        toast.error('Password must be at least 6 characters');
+        return;
+      }
 
-    setLoading(true);
+      // Check if company email already exists
+      try {
+        const res = await fetch('http://localhost:8000/companies');
+        const companies = await res.json();
+        const emailExists = companies.some(
+          c => c.email?.toLowerCase() === formData.companyEmail.toLowerCase()
+        );
+        
+        if (emailExists) {
+          setEmailError('Company email already exists');
+          toast.error('Company email already exists');
+          return;
+        }
+      } catch (err) {
+        toast.error('Could not validate email');
+        return;
+      }
 
-    // Duplicate email check
-    try {
-      const res = await fetch('/src/jobs.json');
-      const data = await res.json();
-      const users = data.users || [];
-      const emailExists = users.some(u => u.email.toLowerCase() === formData.email.toLowerCase());
-      if (emailExists) {
-        setEmailError('Email already exists. Please use a different email.');
-        // toast.error('Email already exists. Please use a different email.');
+      setLoading(true);
+
+      // Create company
+      const newCompany = {
+        id: `c${Date.now()}`,
+        name: formData.companyName,
+        email: formData.companyEmail,
+        password: formData.companyPassword,
+        description: formData.description || '',
+        logo: '',
+        website: formData.website || '',
+        industry: formData.industry || '',
+        sector: '',
+        companySize: formData.companySize,
+        numberOfEmployees: 0,
+        foundedYear: new Date().getFullYear(),
+        headquarters: formData.headquarters || '',
+        contactEmail: formData.companyEmail,
+        contactPhone: formData.contactPhone || '',
+        socialLinks: {
+          linkedin: formData.linkedin || '',
+          twitter: formData.twitter || '',
+          facebook: formData.facebook || ''
+        },
+        benefits: [],
+        culture: '',
+        createdAt: new Date().toISOString(),
+        isActive: true
+      };
+
+      try {
+        const response = await fetch('http://localhost:8000/companies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newCompany)
+        });
+
+        if (response.ok) {
+          toast.success('Company registered successfully! Please login.');
+          navigate('/login');
+        } else {
+          throw new Error('Failed to register company');
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        toast.error('Registration failed. Please try again.');
+      }
+
+      setLoading(false);
+
+    } else {
+      // User registration validation
+      if (!validateEmail(formData.email)) {
+        setEmailError('Please enter a valid email address');
+        toast.error('Please enter a valid email address');
+        return;
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        toast.error('Passwords do not match');
+        return;
+      }
+
+      if (formData.password.length < 6) {
+        toast.error('Password must be at least 6 characters');
+        return;
+      }
+
+      // For employers, require company selection or new company
+      if (formData.role === 'employer' && !formData.companyId && !showNewCompanyForm) {
+        toast.error('Please select a company or register a new one');
+        return;
+      }
+
+      // For developers, require at least one skill
+      if (formData.role === 'developer' && formData.skills.length === 0) {
+        toast.error('Please select at least one skill');
+        return;
+      }
+
+      setLoading(true);
+
+      // Check if user email already exists
+      try {
+        const res = await fetch('http://localhost:8000/users');
+        const users = await res.json();
+        const emailExists = users.some(
+          u => u.email.toLowerCase() === formData.email.toLowerCase()
+        );
+        
+        if (emailExists) {
+          setEmailError('Email already exists');
+          toast.error('Email already exists');
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        toast.error('Could not validate email');
         setLoading(false);
         return;
       }
-    } catch (err) {
-      toast.error('Could not validate email. Please try again.');
+
+      // If employer is registering new company
+      let companyId = formData.companyId;
+      
+      if (formData.role === 'employer' && showNewCompanyForm) {
+        const newCompany = {
+          id: `c${Date.now()}`,
+          name: formData.companyName,
+          email: formData.companyEmail || formData.email,
+          password: formData.password,
+          description: formData.description || '',
+          logo: '',
+          website: formData.website || '',
+          industry: formData.industry || '',
+          sector: '',
+          companySize: formData.companySize,
+          numberOfEmployees: 1,
+          foundedYear: new Date().getFullYear(),
+          headquarters: formData.headquarters || '',
+          contactEmail: formData.companyEmail || formData.email,
+          contactPhone: formData.contactPhone || '',
+          socialLinks: {
+            linkedin: formData.linkedin || '',
+            twitter: formData.twitter || '',
+            facebook: formData.facebook || ''
+          },
+          benefits: [],
+          culture: '',
+          createdAt: new Date().toISOString(),
+          isActive: true
+        };
+
+        try {
+          const response = await fetch('http://localhost:8000/companies', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newCompany)
+          });
+
+          if (response.ok) {
+            const createdCompany = await response.json();
+            companyId = createdCompany.id;
+          } else {
+            throw new Error('Failed to create company');
+          }
+        } catch (error) {
+          console.error('Company creation error:', error);
+          toast.error('Failed to create company');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Register user
+      const userData = {
+        ...formData,
+        companyId: formData.role === 'employer' ? companyId : null
+      };
+
+      const result = await register(userData);
+
+      if (result.success) {
+        toast.success('Registration successful!');
+        navigate('/');
+      } else {
+        toast.error(result.error || 'Registration failed');
+      }
+
       setLoading(false);
-      return;
     }
-
-    const result = await register(formData);
-
-    if (result.success) {
-      toast.success('Registration successful!');
-      navigate('/');
-    } else {
-      toast.error(result.error || 'Registration failed');
-    }
-
-    setLoading(false);
   };
 
   return (
@@ -115,153 +321,559 @@ const RegisterPage = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* First Name */}
+            
+            {/* Account Type Selection */}
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                First Name
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                I want to register as:
               </label>
-              <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                required
-                value={formData.firstName}
-                onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            {/* Last Name */}
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                Last Name
-              </label>
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                required
-                value={formData.lastName}
-                onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={() => {
-                  if (!validateEmail(formData.email)) {
-                    setEmailError('Please enter a valid email address.');
-                  } else {
-                    setEmailError('');
-                  }
-                }}
-                className={`mt-1 appearance-none block w-full px-3 py-2 border ${emailError ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
-                placeholder="Enter your email"
-              />
-              {emailError && (
-                <div className='mt-1 text-red-600 text-sm flex items-center'>
-                  {emailError}
-                </div>
-              )}
-            </div>
-
-            {/* Role */}
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                I am a
-              </label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="developer">Job Seeker/Developer</option>
-                <option value="employer">Employer/Company</option>
-              </select>
-            </div>
-
-            {/* Company (only for employers) */}
-            {formData.role === 'employer' && (
-              <div>
-                <label htmlFor="company" className="block text-sm font-medium text-gray-700">
-                  Company Name
-                </label>
-                <input
-                  id="company"
-                  name="company"
-                  type="text"
-                  required
-                  value={formData.company}
-                  onChange={handleChange}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setAccountType('user')}
+                  className={`p-4 border-2 rounded-lg text-center transition-all ${
+                    accountType === 'user'
+                      ? 'border-indigo-600 bg-indigo-50'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="text-2xl mb-2">👤</div>
+                  <div className="font-medium">Individual User</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Job Seeker or Employer
+                  </div>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setAccountType('company')}
+                  className={`p-4 border-2 rounded-lg text-center transition-all ${
+                    accountType === 'company'
+                      ? 'border-indigo-600 bg-indigo-50'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="text-2xl mb-2">🏢</div>
+                  <div className="font-medium">Company</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Register your organization
+                  </div>
+                </button>
               </div>
-            )}
-
-            {/* Skills (only for developers) */}
-            {formData.role === 'developer' && (
-              <SkillsDropdown
-                selectedSkills={formData.skills}
-                onSkillsChange={handleSkillsChange}
-                maxSkills={5}
-              />
-            )}
-
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
             </div>
 
-            {/* Confirm Password */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
+            {/* COMPANY REGISTRATION FORM */}
+            {accountType === 'company' ? (
+              <>
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Company Information
+                  </h3>
 
+                  {/* Company Name */}
+                  <div className="mb-4">
+                    <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+                      Company Name *
+                    </label>
+                    <input
+                      id="companyName"
+                      name="companyName"
+                      type="text"
+                      required
+                      value={formData.companyName}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Enter company name"
+                    />
+                  </div>
+
+                  {/* Company Email */}
+                  <div className="mb-4">
+                    <label htmlFor="companyEmail" className="block text-sm font-medium text-gray-700">
+                      Company Email *
+                    </label>
+                    <input
+                      id="companyEmail"
+                      name="companyEmail"
+                      type="email"
+                      required
+                      value={formData.companyEmail}
+                      onChange={handleChange}
+                      onBlur={() => {
+                        if (!validateEmail(formData.companyEmail)) {
+                          setEmailError('Please enter a valid email address');
+                        } else {
+                          setEmailError('');
+                        }
+                      }}
+                      className={`mt-1 block w-full px-3 py-2 border ${
+                        emailError ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      } rounded-md focus:ring-indigo-500 focus:border-indigo-500`}
+                      placeholder="company@example.com"
+                    />
+                    {emailError && (
+                      <p className="mt-1 text-sm text-red-600">{emailError}</p>
+                    )}
+                  </div>
+
+                  {/* Company Password */}
+                  <div className="mb-4">
+                    <label htmlFor="companyPassword" className="block text-sm font-medium text-gray-700">
+                      Password *
+                    </label>
+                    <input
+                      id="companyPassword"
+                      name="companyPassword"
+                      type="password"
+                      required
+                      value={formData.companyPassword}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Minimum 6 characters"
+                    />
+                  </div>
+
+                  {/* Confirm Company Password */}
+                  <div className="mb-4">
+                    <label htmlFor="confirmCompanyPassword" className="block text-sm font-medium text-gray-700">
+                      Confirm Password *
+                    </label>
+                    <input
+                      id="confirmCompanyPassword"
+                      name="confirmCompanyPassword"
+                      type="password"
+                      required
+                      value={formData.confirmCompanyPassword}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+
+                  {/* Headquarters */}
+                  <div className="mb-4">
+                    <label htmlFor="headquarters" className="block text-sm font-medium text-gray-700">
+                      Headquarters Location *
+                    </label>
+                    <input
+                      id="headquarters"
+                      name="headquarters"
+                      type="text"
+                      required
+                      value={formData.headquarters}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="City, Country"
+                    />
+                  </div>
+
+                  {/* Contact Phone */}
+                  <div className="mb-4">
+                    <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700">
+                      Contact Phone
+                    </label>
+                    <input
+                      id="contactPhone"
+                      name="contactPhone"
+                      type="tel"
+                      value={formData.contactPhone}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="+1 (555) 123-4567"
+                    />
+                  </div>
+
+                  {/* Website */}
+                  <div className="mb-4">
+                    <label htmlFor="website" className="block text-sm font-medium text-gray-700">
+                      Website
+                    </label>
+                    <input
+                      id="website"
+                      name="website"
+                      type="url"
+                      value={formData.website}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="https://www.example.com"
+                    />
+                  </div>
+
+                  {/* Industry */}
+                  <div className="mb-4">
+                    <label htmlFor="industry" className="block text-sm font-medium text-gray-700">
+                      Industry
+                    </label>
+                    <select
+                      id="industry"
+                      name="industry"
+                      value={formData.industry}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option value="">Select Industry</option>
+                      <option value="Technology">Technology</option>
+                      <option value="Finance">Finance</option>
+                      <option value="Healthcare">Healthcare</option>
+                      <option value="Education">Education</option>
+                      <option value="E-commerce">E-commerce</option>
+                      <option value="Marketing">Marketing & Advertising</option>
+                      <option value="Manufacturing">Manufacturing</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  {/* Company Size */}
+                  <div className="mb-4">
+                    <label htmlFor="companySize" className="block text-sm font-medium text-gray-700">
+                      Company Size
+                    </label>
+                    <select
+                      id="companySize"
+                      name="companySize"
+                      value={formData.companySize}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option value="1-10">1-10 employees</option>
+                      <option value="11-50">11-50 employees</option>
+                      <option value="51-200">51-200 employees</option>
+                      <option value="201-500">201-500 employees</option>
+                      <option value="500+">500+ employees</option>
+                    </select>
+                  </div>
+
+                  {/* Description */}
+                  <div className="mb-4">
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                      Company Description
+                    </label>
+                    <textarea
+                      id="description"
+                      name="description"
+                      rows="3"
+                      value={formData.description}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Brief description of your company"
+                    />
+                  </div>
+
+                  {/* Social Links */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Social Media Links (Optional)
+                    </label>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-blue-600">🔗</span>
+                        <input
+                          name="linkedin"
+                          type="url"
+                          value={formData.linkedin}
+                          onChange={handleChange}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                          placeholder="LinkedIn URL"
+                        />
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <span className="text-blue-400">🐦</span>
+                        <input
+                          name="twitter"
+                          type="url"
+                          value={formData.twitter}
+                          onChange={handleChange}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                          placeholder="Twitter URL"
+                        />
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <span className="text-blue-700">📘</span>
+                        <input
+                          name="facebook"
+                          type="url"
+                          value={formData.facebook}
+                          onChange={handleChange}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                          placeholder="Facebook URL"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* USER REGISTRATION FORM */}
+                <div className="border-t pt-6">
+                  
+                  {/* Role Selection */}
+                  <div className="mb-4">
+                    <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                      I am a *
+                    </label>
+                    <select
+                      id="role"
+                      name="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option value="developer">Job Seeker/Developer</option>
+                      <option value="employer">Employer/Recruiter</option>
+                    </select>
+                  </div>
+
+                  {/* First Name */}
+                  <div className="mb-4">
+                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                      First Name *
+                    </label>
+                    <input
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      required
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+
+                  {/* Last Name */}
+                  <div className="mb-4">
+                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                      Last Name *
+                    </label>
+                    <input
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      required
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div className="mb-4">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                      Email Address *
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      onBlur={() => {
+                        if (!validateEmail(formData.email)) {
+                          setEmailError('Please enter a valid email address');
+                        } else {
+                          setEmailError('');
+                        }
+                      }}
+                      className={`mt-1 block w-full px-3 py-2 border ${
+                        emailError ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      } rounded-md focus:ring-indigo-500 focus:border-indigo-500`}
+                      placeholder="you@example.com"
+                    />
+                    {emailError && (
+                      <p className="mt-1 text-sm text-red-600">{emailError}</p>
+                    )}
+                  </div>
+
+                  {/* Employer-specific: Company Selection */}
+                  {formData.role === 'employer' && (
+                    <>
+                      <div className="mb-4">
+                        <label htmlFor="companyId" className="block text-sm font-medium text-gray-700">
+                          Select Company *
+                        </label>
+                        <select
+                          id="companyId"
+                          name="companyId"
+                          value={formData.companyId || ''}
+                          onChange={handleChange}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                          <option value="">-- Select a Company --</option>
+                          {companies.map(company => (
+                            <option key={company.id} value={company.id}>
+                              {company.name}
+                            </option>
+                          ))}
+                          <option value="new">➕ Register New Company</option>
+                        </select>
+                      </div>
+
+                      {/* Show new company form if "Register New Company" is selected */}
+                      {showNewCompanyForm && (
+                        <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <h4 className="text-sm font-medium text-gray-900 mb-3">
+                            New Company Details
+                          </h4>
+                          
+                          <div className="space-y-3">
+                            <input
+                              name="companyName"
+                              type="text"
+                              required
+                              value={formData.companyName}
+                              onChange={handleChange}
+                              className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                              placeholder="Company Name *"
+                            />
+                            
+                            <input
+                              name="headquarters"
+                              type="text"
+                              value={formData.headquarters}
+                              onChange={handleChange}
+                              className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                              placeholder="Headquarters Location"
+                            />
+                            
+                            <input
+                              name="website"
+                              type="url"
+                              value={formData.website}
+                              onChange={handleChange}
+                              className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                              placeholder="Company Website"
+                            />
+                            
+                            <select
+                              name="industry"
+                              value={formData.industry}
+                              onChange={handleChange}
+                              className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                            >
+                              <option value="">Select Industry</option>
+                              <option value="Technology">Technology</option>
+                              <option value="Finance">Finance</option>
+                              <option value="Healthcare">Healthcare</option>
+                              <option value="Education">Education</option>
+                              <option value="E-commerce">E-commerce</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mb-4">
+                        <label htmlFor="position" className="block text-sm font-medium text-gray-700">
+                          Your Position/Role *
+                        </label>
+                        <input
+                          id="position"
+                          name="position"
+                          type="text"
+                          required
+                          value={formData.position}
+                          onChange={handleChange}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                          placeholder="e.g., HR Manager, Recruiter"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Developer-specific: Skills */}
+                  {formData.role === 'developer' && (
+                    <div className="mb-4">
+                      <SkillsDropdown
+                        selectedSkills={formData.skills}
+                        onSkillsChange={handleSkillsChange}
+                        maxSkills={5}
+                      />
+                    </div>
+                  )}
+
+                  {/* Password */}
+                  <div className="mb-4">
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                      Password *
+                    </label>
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      required
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Minimum 6 characters"
+                    />
+                  </div>
+
+                  {/* Confirm Password */}
+                  <div className="mb-4">
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                      Confirm Password *
+                    </label>
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      required
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Submit Button */}
             <div>
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creating account...' : 'Create account'}
+                {loading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Creating account...
+                  </span>
+                ) : (
+                  `Create ${accountType === 'company' ? 'Company' : 'Account'}`
+                )}
               </button>
             </div>
           </form>
+
+          {/* Login Link */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  Already have an account?
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Link
+                to="/login"
+                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Sign in instead
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>

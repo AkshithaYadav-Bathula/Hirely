@@ -12,34 +12,50 @@ const SavedJobsPage = () => {
 
   useEffect(() => {
     const fetchSavedJobs = async () => {
-      if (!user || !user.savedJobs) {
+      if (!user || !user.id) {
         setLoading(false);
+        setSavedJobs([]);
         return;
       }
 
       try {
-        // Fetch all jobs
-        const jobsResponse = await fetch('http://localhost:8000/jobs');
-        const allJobs = await jobsResponse.json();
+        // fetch fresh user record
+        const latestUserRes = await fetch(`http://localhost:8000/users/${user.id}`);
+        const latestUser = latestUserRes.ok ? await latestUserRes.json() : user;
+        const userSavedIds = Array.isArray(latestUser.savedJobs) ? latestUser.savedJobs : [];
 
-        // Filter jobs that user has saved
-        const userSavedJobs = allJobs.filter((job) =>
-          user.savedJobs.includes(job.id)
-        );
-        setSavedJobs(userSavedJobs);
+        if (userSavedIds.length === 0) {
+          setSavedJobs([]);
+        } else {
+          // fetch all jobs and companies once
+          const [jobsResponse, companiesResponse] = await Promise.all([
+            fetch('http://localhost:8000/jobs'),
+            fetch('http://localhost:8000/companies'),
+          ]);
+          const allJobs = jobsResponse.ok ? await jobsResponse.json() : [];
+          const companies = companiesResponse.ok ? await companiesResponse.json() : [];
+          const compMap = new Map(companies.map((c) => [c.id, c]));
 
-        // Check which jobs user has already applied to
+          const userSavedJobs = allJobs
+            .filter((job) => userSavedIds.includes(job.id) || userSavedIds.includes(String(job.id)))
+            .map((job) => ({ ...job, company: compMap.get(job.companyId) ?? job.company }));
+
+          setSavedJobs(userSavedJobs);
+        }
+
+        // fetch applications for user
         const applicationsResponse = await fetch(
           `http://localhost:8000/applications?developerId=${user.id}`
         );
-        const applications = await applicationsResponse.json();
+        const applications = applicationsResponse.ok ? await applicationsResponse.json() : [];
         const appliedJobIds = applications.map((app) => app.jobId);
         setAppliedJobs(appliedJobIds);
       } catch (error) {
         console.error('Error fetching saved jobs:', error);
         toast.error('Failed to load saved jobs');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchSavedJobs();
@@ -48,7 +64,10 @@ const SavedJobsPage = () => {
   // Remove job from saved list
   const handleUnsaveJob = async (jobId) => {
     try {
-      const updatedSavedJobs = user.savedJobs.filter((id) => id !== jobId);
+      // Fetch latest user, remove id, persist to server
+      const userRes = await fetch(`http://localhost:8000/users/${user.id}`);
+      const userData = userRes.ok ? await userRes.json() : user;
+      const updatedSavedJobs = (userData.savedJobs || []).filter((id) => String(id) !== String(jobId));
 
       await fetch(`http://localhost:8000/users/${user.id}`, {
         method: 'PATCH',
@@ -56,10 +75,8 @@ const SavedJobsPage = () => {
         body: JSON.stringify({ savedJobs: updatedSavedJobs }),
       });
 
-      // Update local state
-      setSavedJobs((prev) => prev.filter((job) => job.id !== jobId));
-
-      // Update user context if needed
+      // Update local state immediately
+      setSavedJobs((prev) => prev.filter((job) => String(job.id) !== String(jobId)));
       toast.success('Job removed from saved list');
     } catch (error) {
       console.error('Error removing saved job:', error);
@@ -76,7 +93,7 @@ const SavedJobsPage = () => {
         id: Date.now().toString(),
         jobId: job.id,
         developerId: user.id,
-        coverLetter: `I am interested in the ${job.title} position at ${job.company.name}. I believe my skills and experience make me a great fit for this role.`,
+        coverLetter: `I am interested in the ${job.title} position at ${job.company?.name || 'the company'}. I believe my skills and experience make me a great fit for this role.`,
         resume: user.resume || '',
         status: 'pending',
         appliedAt: new Date().toISOString(),
@@ -99,9 +116,9 @@ const SavedJobsPage = () => {
     } catch (error) {
       console.error('Error applying to job:', error);
       toast.error('Failed to submit application. Please try again.');
+    } finally {
+      setApplying((prev) => ({ ...prev, [job.id]: false }));
     }
-
-    setApplying((prev) => ({ ...prev, [job.id]: false }));
   };
 
   // Format date
@@ -115,7 +132,7 @@ const SavedJobsPage = () => {
 
   // Check if user has already applied to this job
   const hasApplied = (jobId) => {
-    return appliedJobs.includes(jobId);
+    return appliedJobs.includes(jobId) || appliedJobs.includes(String(jobId));
   };
 
   if (loading) {
@@ -131,9 +148,7 @@ const SavedJobsPage = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-             Saved Jobs
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Saved Jobs</h1>
           <p className="text-gray-600">
             Jobs you've saved for later • {savedJobs.length} job
             {savedJobs.length !== 1 ? 's' : ''} saved
@@ -144,9 +159,7 @@ const SavedJobsPage = () => {
         {savedJobs.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
             <div className="text-6xl mb-4">📂</div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              No Saved Jobs
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Saved Jobs</h3>
             <p className="text-gray-500 mb-6">
               Save jobs that interest you to review and apply to them later.
             </p>
@@ -187,7 +200,7 @@ const SavedJobsPage = () => {
                       <div className="space-y-1 text-sm text-gray-600 mb-3">
                         <p>
                           <i className="fas fa-building mr-2"></i>
-                          {job.company?.name}
+                          {job.company?.name || 'Company'}
                         </p>
                         <p>
                           <i className="fas fa-map-marker-alt mr-2"></i>
@@ -206,7 +219,6 @@ const SavedJobsPage = () => {
                       </div>
                     </div>
 
-                    {/* ✅ PROFESSIONAL: Replace unprofessional icon with professional button */}
                     <div className="text-right">
                       <button
                         onClick={() => handleUnsaveJob(job.id)}
@@ -289,7 +301,7 @@ const SavedJobsPage = () => {
                         disabled
                         className="flex-1 bg-gray-300 text-gray-600 font-semibold py-2 px-4 rounded-lg cursor-not-allowed flex items-center justify-center"
                       >
-                         Applied
+                        Applied
                       </button>
                     ) : (
                       <button
@@ -312,7 +324,7 @@ const SavedJobsPage = () => {
                       to={`/jobs/${job.id}`}
                       className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-2 px-4 rounded-lg transition-colors text-center"
                     >
-                       View Details
+                      View Details
                     </Link>
                   </div>
 

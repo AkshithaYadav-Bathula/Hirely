@@ -1,16 +1,16 @@
 import { useState } from 'react';
-// React’s way to store and update data inside a component.
-//  Purpose: Store a state variable whose changes re-render the component.
 import { FaMapMarker } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const JobListing = ({ job }) => {
   const [showFullDescription, setShowFullDescription] = useState(false);
 
-  let description = job.description;
+  let description = job.description || '';
   if (!showFullDescription) {
-    description = description.substring(0, 90) + '...';
+    description = description.substring(0, 90) + (job.description?.length > 90 ? '...' : '');
   }
+
+  const companyId = job.company?.id ?? job.companyId;
 
   return (
     <div className='bg-white rounded-xl shadow-md relative'>
@@ -45,6 +45,30 @@ const JobListing = ({ job }) => {
             Read More
           </Link>
         </div>
+
+        {/* company line - only render if we have a company id/name */}
+        {companyId && job.company?.name && (
+          <div className='company-line mt-2'>
+            <Link
+              to={`/company/${companyId}`}
+              className='text-indigo-600 hover:underline font-medium'
+            >
+              {job.company.name}
+            </Link>
+          </div>
+        )}
+
+        {/* nicer "View Company" button, only if we have companyId */}
+        {companyId && (
+          <div className='mt-3'>
+            <Link
+              to={`/company/${companyId}`}
+              className='inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded shadow-sm hover:bg-indigo-200 transition-colors text-sm'
+            >
+              View Company
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

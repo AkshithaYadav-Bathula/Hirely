@@ -4,6 +4,9 @@ import {
   createRoutesFromElements,
   RouterProvider,
 } from 'react-router-dom';
+import CompanyProfilePage, { companyLoader } from './pages/CompanyProfilePage';
+// ...inside your <Routes> or router config...
+<Route path="/company/:id" element={<CompanyProfilePage />} loader={companyLoader} />
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
@@ -26,6 +29,7 @@ import RecommendationsPage from './pages/RecommendationsPage';
 import { useContext } from 'react';
 import { AuthContext } from './context/AuthContext';
 import ProfilePage from './pages/ProfilePage';
+import CompanyDashboardPage from './pages/CompanyDashboardPage';
 
 const App = () => {
   // Add New Job — called by AddJobPage via prop addJobSubmit
@@ -281,6 +285,7 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/company-dashboard" element={<CompanyDashboardPage />} />
 
         {/* Catch all route */}
         <Route path='*' element={<NotFoundPage />} />

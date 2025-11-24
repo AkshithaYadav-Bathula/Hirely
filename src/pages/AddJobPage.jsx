@@ -78,12 +78,18 @@ const AddJobPage = ({ addJobSubmit }) => {
 
     setLoading(true);
 
+    // determine companyId from logged-in user or company session
+    const storedCompany = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('company') || 'null') : null;
+    const resolvedCompanyId = user?.companyId ?? storedCompany?.id ?? null;
+
     const newJob = {
+      id: Date.now().toString(),
       title,
       type,
       location,
       description,
       salary,
+      companyId: resolvedCompanyId, // <-- NEW
       company: {
         name: companyName,
         description: companyDescription,
