@@ -8,10 +8,6 @@ const Navbar = () => {
   const [showProfile, setShowProfile] = useState(false);
   const dropdownRef = useRef();
 
-  // detect company session saved to localStorage (LoginPage stores this)
-  const storedCompany = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('company') || 'null') : null;
-  const isCompanySession = !!storedCompany && localStorage.getItem('accountType') === 'company';
-
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -29,16 +25,11 @@ const Navbar = () => {
       : 'text-white hover:bg-gray-900 hover:text-white rounded-md px-3 py-2';
 
   const handleLogout = () => {
-    logout();
-  };
-
-  const handleCompanyLogout = () => {
+    // Clear both sessionStorage and localStorage
+    sessionStorage.removeItem('currentUser');
     localStorage.removeItem('company');
     localStorage.removeItem('accountType');
-    // also clear sessionStorage to be safe
-    sessionStorage.removeItem('currentUser');
-    // reload or navigate to home so UI updates
-    window.location.href = '/';
+    logout();
   };
 
   return (
@@ -89,9 +80,21 @@ const Navbar = () => {
                         <NavLink to='/my-jobs' className={linkClass}>
                           My Jobs
                         </NavLink>
-                        {/* <NavLink to='/applications' className={linkClass}>
-                          Applications
-                        </NavLink> */}
+                      </>
+                    )}
+
+                    {/* 🆕 Company-specific routes */}
+                    {hasRole('company') && (
+                      <>
+                        <NavLink to='/add-job' className={linkClass}>
+                          Post Job
+                        </NavLink>
+                        <NavLink to='/my-jobs' className={linkClass}>
+                          My Jobs
+                        </NavLink>
+                        <NavLink to='/company-dashboard' className={linkClass}>
+                          Dashboard
+                        </NavLink>
                       </>
                     )}
 
@@ -112,55 +115,92 @@ const Navbar = () => {
 
                     {/* User menu */}
                     <div className='relative flex items-center space-x-2'>
-                      {/* Make name/role clickable */}
                       <button
                         className='text-white text-sm font-semibold focus:outline-none'
                         onClick={() => setShowProfile((prev) => !prev)}
                         style={{ cursor: 'pointer' }}
                       >
-                        Hi, {user?.firstName}
+                        Hi, {user?.firstName || user?.name?.split(' ')[0] || 'User'}
                       </button>
-                      {/* Profile dropdown (improved design) */}
+                      
+                      {/* Profile dropdown */}
                       {showProfile && (
                         <div
                           ref={dropdownRef}
                           className="absolute top-12 right-0 bg-white rounded-xl shadow-lg p-6 min-w-[340px] z-50 border border-indigo-100"
                           style={{ fontFamily: 'Segoe UI, Roboto, Arial, sans-serif' }}
                         >
-                          <div className="flex items-center mb-4">
-                            <div className="w-16 h-16 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-3xl mr-4">
-                              {user?.firstName?.[0]}
-                            </div>
-                            <div>
-                              <div className="font-semibold text-indigo-700 text-xl mb-1">
-                                {user?.firstName} {user?.lastName}
+                          {/* 🆕 Different display for company vs user */}
+                          {hasRole('company') ? (
+                            // Company profile dropdown
+                            <>
+                              <div className="flex items-center mb-4">
+                                <div className="w-16 h-16 rounded-full overflow-hidden bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-3xl mr-4">
+                                  {user?.logo ? (
+                                    <img src={user.logo} alt={user.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    user?.name?.[0] || 'C'
+                                  )}
+                                </div>
+                                <div>
+                                  <div className="font-semibold text-indigo-700 text-xl mb-1">
+                                    {user?.name || 'Company'}
+                                  </div>
+                                  <div className="text-xs text-gray-500">{user?.contactEmail || user?.email}</div>
+                                  <div className="text-xs text-indigo-600 font-medium mt-1">Company Account</div>
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-500">{user?.email}</div>
-                            </div>
-                          </div>
-                          {user?.role === 'developer' && user?.skills?.length > 0 && (
-                            <div className="mb-3">
-                              <div className="text-xs text-gray-600 mb-1">Skills:</div>
-                              <div className="flex flex-wrap gap-2">
-                                {user.skills.map((skill, index) =>
-                                  <span key={index} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-medium">
-                                    {skill.name}
-                                  </span>
-                                )}
+                              
+                              {user?.industry && (
+                                <div className="mb-3 text-xs text-gray-600">
+                                  <span className="font-medium">Industry:</span> {user.industry}
+                                </div>
+                              )}
+                              
+                              {user?.companySize && (
+                                <div className="mb-3 text-xs text-gray-600">
+                                  <span className="font-medium">Company Size:</span> {user.companySize}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            // Regular user profile dropdown
+                            <>
+                              <div className="flex items-center mb-4">
+                                <div className="w-16 h-16 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-3xl mr-4">
+                                  {user?.firstName?.[0] || 'U'}
+                                </div>
+                                <div>
+                                  <div className="font-semibold text-indigo-700 text-xl mb-1">
+                                    {user?.firstName} {user?.lastName}
+                                  </div>
+                                  <div className="text-xs text-gray-500">{user?.email}</div>
+                                </div>
                               </div>
-                            </div>
+                              
+                              {user?.role === 'developer' && user?.skills?.length > 0 && (
+                                <div className="mb-3">
+                                  <div className="text-xs text-gray-600 mb-1">Skills:</div>
+                                  <div className="flex flex-wrap gap-2">
+                                    {user.skills.slice(0, 3).map((skill, index) =>
+                                      <span key={index} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-medium">
+                                        {skill.name || skill}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {user?.about && (
+                                <div className="mb-3 text-xs text-gray-700">
+                                  <span className="font-semibold">About:</span> {user.about.substring(0, 50)}...
+                                </div>
+                              )}
+                            </>
                           )}
-                          {user?.role === 'employer' && user?.companyName && (
-                            <div className="mb-3 text-xs text-gray-600">
-                              <span className="font-medium">Company:</span> {user.companyName}
-                            </div>
-                          )}
-                          {user?.about && (
-                            <div className="mb-3 text-xs text-gray-700">
-                              <span className="font-semibold">About:</span> {user.about}
-                            </div>
-                          )}
+                          
                           <hr className="my-4 border-gray-200" />
+                          
                           <div className="flex gap-2">
                             <NavLink
                               to="/profile"
@@ -168,7 +208,7 @@ const Navbar = () => {
                               onClick={() => setShowProfile(false)}
                               style={{ border: '1px solid #e0e3f0' }}
                             >
-                              Edit Profile
+                              {hasRole('company') ? 'Company Profile' : 'Edit Profile'}
                             </NavLink>
                             <button
                               onClick={handleLogout}
@@ -184,36 +224,12 @@ const Navbar = () => {
                   </>
                 ) : (
                   <>
-                    {/* Not authenticated: either show company quick menu or login/register */}
-                    {!isCompanySession ? (
-                      <>
-                        <NavLink to='/login' className={linkClass}>
-                          Login
-                        </NavLink>
-                        <NavLink to='/register' className={linkClass}>
-                          Register
-                        </NavLink>
-                      </>
-                    ) : (
-                      <div className='relative flex items-center'>
-                        <button
-                          className='text-white text-sm font-semibold focus:outline-none'
-                          onClick={() => setShowProfile((prev) => !prev)}
-                        >
-                          Hi, {storedCompany?.name?.split(' ')[0]}
-                        </button>
-                        {showProfile && (
-                          <div ref={dropdownRef} className="absolute top-12 right-0 bg-white rounded-xl shadow-lg p-4 min-w-[260px] z-50 border border-indigo-100">
-                            <div className="font-semibold text-indigo-700 mb-1">{storedCompany?.name}</div>
-                            <div className="text-xs text-gray-500 mb-3">{storedCompany?.contactEmail || storedCompany?.email}</div>
-                            <div className="flex gap-2">
-                              <button onClick={() => window.location.href = '/company-dashboard'} className="flex-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-2 rounded text-sm">Dashboard</button>
-                              <button onClick={handleCompanyLogout} className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded text-sm">Logout</button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <NavLink to='/login' className={linkClass}>
+                      Login
+                    </NavLink>
+                    <NavLink to='/register' className={linkClass}>
+                      Register
+                    </NavLink>
                   </>
                 )}
               </div>

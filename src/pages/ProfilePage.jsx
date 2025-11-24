@@ -364,45 +364,88 @@ const SkillsDropdown = ({ availableSkills, selectedSkills, onSkillAdd, onSkillRe
 };
 
 const ProfilePage = (props) => {
-  // existing user-profile code continues to work when no loader data
+  // ✅ ALL HOOKS MUST BE AT THE TOP - BEFORE ANY RETURNS OR CONDITIONAL LOGIC
   const loader = useLoaderData?.() || null;
-
-  // NEW: support fetching company data when loader not provided (so CompanyProfilePage can be removed)
+  const { user, updateUser } = useAuth();
   const { id: companyParamId } = useParams();
+
+  // ✅ ALL STATE HOOKS
   const [companyFallback, setCompanyFallback] = useState(null);
   const [companyLoading, setCompanyLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
+  const [isDraft, setIsDraft] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [draftData, setDraftData] = useState(null);
+  const [lastAutoSaved, setLastAutoSaved] = useState(null);
+  const [availableSkills, setAvailableSkills] = useState([]);
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [showActionBar, setShowActionBar] = useState(false);
+  
+  const [profile, setProfile] = useState({
+    name: '',
+    email: '',
+    profilePhoto: '',
+    resume: '',
+    introVideo: '',
+    companyLogo: '',
+    about: ''
+  });
 
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    fileUrl: '',
+    fileType: '',
+    fileName: ''
+  });
+
+  // ✅ ALL REF HOOKS
+  const resumeRef = useRef();
+  const photoRef = useRef();
+  const videoRef = useRef();
+  const logoRef = useRef();
+  const quillRef = useRef(null);
+
+  // ✅ COMPUTED VALUES
+  const isLoggedInCompany = user?.role === 'company';
+  const loggedInCompanyId = isLoggedInCompany ? user?.id : null;
+  const effectiveCompanyId = companyParamId || loggedInCompanyId;
+
+  // ✅ ALL EFFECT HOOKS - keeping all existing effects unchanged
+  
+  // Company data fetching effect
   useEffect(() => {
-    // if loader already provided (route loader) do nothing
     if (loader && loader.company) return;
-    // only fetch when route param exists (company/:id)
-    if (!companyParamId) return;
+    if (!effectiveCompanyId) return;
 
-    const base = 'http://localhost:8000'; // adjust if your API base differs
+    const base = 'http://localhost:8000';
     let cancelled = false;
+    
     const fetchCompanyData = async () => {
       setCompanyLoading(true);
       try {
         const [companyRes, jobsRes, usersRes] = await Promise.all([
-          fetch(`${base}/companies/${encodeURIComponent(companyParamId)}`),
-          fetch(`${base}/jobs?companyId=${encodeURIComponent(companyParamId)}`),
+          fetch(`${base}/companies/${encodeURIComponent(effectiveCompanyId)}`),
+          fetch(`${base}/jobs?companyId=${encodeURIComponent(effectiveCompanyId)}`),
           fetch(`${base}/users`)
         ]);
+        
         if (!companyRes.ok) throw new Error('Company fetch failed');
         const company = await companyRes.json();
         const jobs = jobsRes.ok ? await jobsRes.json() : [];
         const users = usersRes.ok ? await usersRes.json() : [];
 
-        // employees: users whose companyId === company.id
         const employees = users.filter(u => String(u.companyId) === String(company.id));
 
-        // fetch applications for jobs
         let apps = [];
         if (jobs.length > 0) {
           const qs = jobs.map(j => `jobId=${encodeURIComponent(j.id)}`).join('&');
           const appsRes = await fetch(`${base}/applications?${qs}`);
           apps = appsRes.ok ? await appsRes.json() : [];
         }
+        
         const applicationsByJob = {};
         apps.forEach(a => {
           const k = String(a.jobId);
@@ -422,21 +465,359 @@ const ProfilePage = (props) => {
 
     fetchCompanyData();
     return () => { cancelled = true; };
-  }, [companyParamId, loader]);
+  }, [effectiveCompanyId, loader]);
 
-  // Use loader if provided, otherwise fallback
+  // Load skills effect
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/skills');
+        const skills = await response.json();
+        setAvailableSkills(skills || []);
+      } catch (error) {
+        console.error('Error fetching skills:', error);
+      }
+    };
+    fetchSkills();
+  }, []);
+
+  // Load profile effect
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user || availableSkills.length === 0) return;
+
+      try {
+        const response = await fetch(`http://localhost:8000/users/${user.id}`);
+        const userData = await response.json();
+
+        const hasDraftVersion = userData.draft && Object.keys(userData.draft).length > 0;
+        setHasDraft(hasDraftVersion);
+        setIsDraft(hasDraftVersion);
+
+        if (isEditing && hasDraftVersion) {
+          setProfile({
+            name: userData.draft.name || '',
+            email: user.email,
+            profilePhoto: userData.draft.profilePhoto || '',
+            resume: userData.draft.resume || '',
+            introVideo: userData.draft.introVideo || '',
+            companyLogo: userData.draft.companyLogo || '',
+            about: userData.draft.about || ''
+          });
+
+          if (userData.draft.skills) {
+            const draftSkillObjects = availableSkills.filter(skill => 
+              userData.draft.skills.includes(skill.id)
+            );
+            setSelectedSkills(draftSkillObjects);
+          }
+        } else {
+          setProfile({
+            name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+            email: user.email,
+            profilePhoto: userData.profilePhoto || '',
+            resume: userData.resume || '',
+            introVideo: userData.introVideo || '',
+            companyLogo: userData.companyLogo || '',
+            about: userData.about || ''
+          });
+
+          if (userData.skills) {
+            const userSkillObjects = availableSkills.filter(skill => 
+              userData.skills.includes(skill.id)
+            );
+            setSelectedSkills(userSkillObjects);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
+    
+    loadProfile();
+  }, [user, availableSkills, isEditing]);
+
+  // Auto-save effect
+  useEffect(() => {
+    if (!isEditing || !hasUnsavedChanges) return;
+
+    const autoSaveTimer = setTimeout(() => {
+      handleSaveDraft(false);
+      setLastAutoSaved(new Date());
+    }, 2000);
+
+    return () => clearTimeout(autoSaveTimer);
+  }, [profile, selectedSkills, isEditing, hasUnsavedChanges]);
+
+  // Scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 200) {
+        setShowActionBar(true);
+      } else {
+        setShowActionBar(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // ✅ HELPER FUNCTIONS - DEFINED BEFORE RENDERING LOGIC
+  const openModal = (url, type, name) => {
+    setModalState({
+      isOpen: true,
+      fileUrl: url,
+      fileType: type,
+      fileName: name
+    });
+  };
+
+  const closeModal = () => {
+    setModalState({
+      isOpen: false,
+      fileUrl: '',
+      fileType: '',
+      fileName: ''
+    });
+  };
+
+  const handleProfileChange = (field, value) => {
+    setProfile(prev => ({ ...prev, [field]: value }));
+    setHasUnsavedChanges(true);
+  };
+
+  const handleSkillAdd = (skill) => {
+    if (!selectedSkills.find(s => s.id === skill.id)) {
+      setSelectedSkills(prev => [...prev, skill]);
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  const handleSkillRemove = (skillId) => {
+    setSelectedSkills(prev => prev.filter(skill => skill.id !== skillId));
+    setHasUnsavedChanges(true);
+  };
+
+  const uploadToS3 = async (file, type) => {
+    try {
+      let folder = '';
+      if (type === 'resume') folder = 'resumes';
+      if (type === 'photo' || type === 'logo') folder = 'images';
+      if (type === 'video') folder = 'videos';
+      
+      const fileName = `${user.id}/${folder}/${file.name}`;
+      const fileBody = await file.arrayBuffer();
+      
+      const command = new PutObjectCommand({
+        Bucket: import.meta.env.VITE_AWS_BUCKET,
+        Key: fileName,
+        Body: new Uint8Array(fileBody),
+        ContentType: file.type,
+      });
+
+      await s3Client.send(command);
+      
+      const publicUrl = `https://${import.meta.env.VITE_AWS_BUCKET}.s3.${import.meta.env.VITE_AWS_REGION}.amazonaws.com/${fileName}`;
+      return publicUrl;
+    } catch (error) {
+      console.error('S3 Upload Error:', error);
+      throw error;
+    }
+  };
+
+  const handleFileUpload = async (file, type) => {
+    if (!file) return;
+    
+    const maxSize = type === 'video' ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert(`File too large. Maximum size is ${type === 'video' ? '50MB' : '5MB'}`);
+      return;
+    }
+    
+    setUploading(true);
+    
+    try {
+      const fileUrl = await uploadToS3(file, type);
+      const fileUrlWithTimestamp = `${fileUrl}?t=${Date.now()}`;
+      
+      const fieldName = type === 'photo' ? 'profilePhoto' : 
+                       type === 'logo' ? 'companyLogo' : 
+                       type === 'video' ? 'introVideo' : 'resume';
+                       
+      handleProfileChange(fieldName, fileUrlWithTimestamp);
+      alert(`${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully!`);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Upload failed. Please try again.');
+    }
+    
+    setUploading(false);
+  };
+
+  const handleSaveDraft = async (showSuccessMessage = false) => {
+    setSaving(true);
+    
+    try {
+      const draftData = {
+        name: profile.name || '',
+        profilePhoto: profile.profilePhoto || '',
+        resume: profile.resume || '',
+        introVideo: profile.introVideo || '',
+        companyLogo: profile.companyLogo || '',
+        about: profile.about || '',
+        skills: selectedSkills.map(skill => skill.id),
+        lastModified: new Date().toISOString()
+      };
+
+      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft: draftData })
+      });
+
+      if (response.ok) {
+        setHasDraft(true);
+        setIsDraft(true);
+        setHasUnsavedChanges(false);
+        setDraftData(draftData);
+        setLastAutoSaved(new Date().toISOString());
+        
+        if (showSuccessMessage) {
+          alert('✅ Draft saved successfully!');
+        }
+        
+        console.log('✅ Draft saved to jobs.json');
+      } else {
+        throw new Error('Failed to save draft');
+      }
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      
+      if (showSuccessMessage) {
+        alert('Failed to save draft. Please try again.');
+      }
+    }
+    
+    setSaving(false);
+  };
+
+  const handlePublish = async () => {
+    if (!window.confirm('Are you sure you want to publish this profile? This will replace your current published version.')) {
+      return;
+    }
+
+    setSaving(true);
+    
+    try {
+      const publishedData = {
+        name: profile.name || '',
+        profilePhoto: profile.profilePhoto || '',
+        resume: profile.resume || '',
+        introVideo: profile.introVideo || '',
+        companyLogo: profile.companyLogo || '',
+        about: profile.about || '',
+        skills: selectedSkills.map(skill => skill.id),
+        profileStatus: 'published',
+        publishedAt: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+        draft: null
+      };
+
+      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(publishedData)
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        updateUser(updatedUser);
+        setHasDraft(false);
+        setIsDraft(false);
+        setIsEditing(false);
+        setHasUnsavedChanges(false);
+        alert('🎉 Profile published successfully!');
+        window.location.reload();
+      } else {
+        throw new Error('Failed to publish profile');
+      }
+    } catch (error) {
+      console.error('Error publishing profile:', error);
+      alert('Failed to publish profile');
+    }
+    
+    setSaving(false);
+  };
+
+  const handleDiscardDraft = async () => {
+    if (!window.confirm('Are you sure you want to discard all draft changes?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft: null })
+      });
+
+      if (response.ok) {
+        setHasDraft(false);
+        setIsDraft(false);
+        setIsEditing(false);
+        setHasUnsavedChanges(false);
+        alert('Draft discarded');
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error discarding draft:', error);
+      alert('Failed to discard draft');
+    }
+  };
+
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['link', 'image'],
+      ['clean']
+    ]
+  };
+
+  const getCurrentProfileImage = () => {
+    if (user?.role === 'developer') {
+      return profile.profilePhoto || 'https://placehold.co/120x120?text=Profile';
+    } else {
+      return profile.companyLogo || 'https://placehold.co/120x120?text=Logo';
+    }
+  };
+
+  const getFileName = (url) => {
+    if (!url) return '';
+    try {
+      const parts = url.split('/');
+      const fileName = parts[parts.length - 1];
+      return decodeURIComponent(fileName.split('?')[0]);
+    } catch {
+      return 'File';
+    }
+  };
+
+  // ✅ NOW ALL HOOKS ARE DECLARED - SAFE TO DO CONDITIONAL RENDERING
   const companyData = (loader && loader.company) ? loader : companyFallback;
 
-  // If route is company and still loading, show loading UI
-  if (!loader && companyParamId && companyLoading) {
+  // Company loading state
+  if (!loader && effectiveCompanyId && companyLoading) {
     return <div className="p-6">Loading company profile...</div>;
   }
 
-  // Branch rendering uses companyData (same as prior loader-based branch)
+  // Company profile view - keeping unchanged
   if (companyData && companyData.company) {
     const { company, jobs = [] } = companyData;
     const employees = companyData.employees || [];
-    const applicationsByJob = companyData.applicationsByJob || {};
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -512,396 +893,7 @@ const ProfilePage = (props) => {
     );
   }
 
-  // No company data: fall back to existing ProfilePage behavior (developer/employer user profile)
-  const { user, updateUser } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [hasDraft, setHasDraft] = useState(false);
-  
-  const [isDraft, setIsDraft] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [draftData, setDraftData] = useState(null);
-  const [lastAutoSaved, setLastAutoSaved] = useState(null);
-  
-  const [availableSkills, setAvailableSkills] = useState([]);
-  const [selectedSkills, setSelectedSkills] = useState([]);
-  
-  const [profile, setProfile] = useState({
-    name: '',
-    email: '',
-    profilePhoto: '',
-    resume: '',
-    introVideo: '',
-    companyLogo: '',
-    about: ''
-  });
-
-  const [modalState, setModalState] = useState({
-    isOpen: false,
-    fileUrl: '',
-    fileType: '',
-    fileName: ''
-  });
-
-  const resumeRef = useRef();
-  const photoRef = useRef();
-  const videoRef = useRef();
-  const logoRef = useRef();
-  const quillRef = useRef(null);
-
-  const openModal = (url, type, name) => {
-    setModalState({
-      isOpen: true,
-      fileUrl: url,
-      fileType: type,
-      fileName: name
-    });
-  };
-
-  const closeModal = () => {
-    setModalState({
-      isOpen: false,
-      fileUrl: '',
-      fileType: '',
-      fileName: ''
-    });
-  };
-
-  // ✅ Load skills
-  useEffect(() => {
-    const fetchSkills = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/skills');
-        const skills = await response.json();
-        setAvailableSkills(skills || []);
-      } catch (error) {
-        console.error('Error fetching skills:', error);
-      }
-    };
-    fetchSkills();
-  }, []);
-
-  // ✅ Load profile data and check for draft
-  useEffect(() => {
-    const loadProfile = async () => {
-      if (!user || availableSkills.length === 0) return;
-
-      try {
-        const response = await fetch(`http://localhost:8000/users/${user.id}`);
-        const userData = await response.json();
-
-        // Check if user has draft
-        const hasDraftVersion = userData.draft && Object.keys(userData.draft).length > 0;
-        setHasDraft(hasDraftVersion);
-        setIsDraft(hasDraftVersion);
-
-        if (isEditing && hasDraftVersion) {
-          // Load draft when editing
-          setProfile({
-            name: userData.draft.name || '',
-            email: user.email,
-            profilePhoto: userData.draft.profilePhoto || '',
-            resume: userData.draft.resume || '',
-            introVideo: userData.draft.introVideo || '',
-            companyLogo: userData.draft.companyLogo || '',
-            about: userData.draft.about || ''
-          });
-
-          if (userData.draft.skills) {
-            const draftSkillObjects = availableSkills.filter(skill => 
-              userData.draft.skills.includes(skill.id)
-            );
-            setSelectedSkills(draftSkillObjects);
-          }
-        } else {
-          // Load published version
-          setProfile({
-            name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
-            email: user.email,
-            profilePhoto: userData.profilePhoto || '',
-            resume: userData.resume || '',
-            introVideo: userData.introVideo || '',
-            companyLogo: userData.companyLogo || '',
-            about: userData.about || ''
-          });
-
-          if (userData.skills) {
-            const userSkillObjects = availableSkills.filter(skill => 
-              userData.skills.includes(skill.id)
-            );
-            setSelectedSkills(userSkillObjects);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading profile:', error);
-      }
-    };
-
-    loadProfile();
-  }, [user, availableSkills, isEditing]);
-
-  // ✅ Auto-save effect - SILENT (no popups)
-  useEffect(() => {
-    if (!isEditing || !hasUnsavedChanges) return;
-
-    const autoSaveTimer = setTimeout(() => {
-      handleSaveDraft(false); // ✅ Pass false for silent save
-      setLastAutoSaved(new Date());
-    }, 2000);
-
-    return () => clearTimeout(autoSaveTimer);
-  }, [profile, selectedSkills, isEditing, hasUnsavedChanges]);
-
-  // ✅ Handle profile changes
-  const handleProfileChange = (field, value) => {
-    setProfile(prev => ({ ...prev, [field]: value }));
-    setHasUnsavedChanges(true);
-  };
-
-  // ✅ Skills management
-  const handleSkillAdd = (skill) => {
-    if (!selectedSkills.find(s => s.id === skill.id)) {
-      setSelectedSkills(prev => [...prev, skill]);
-      setHasUnsavedChanges(true);
-    }
-  };
-
-  const handleSkillRemove = (skillId) => {
-    setSelectedSkills(prev => prev.filter(skill => skill.id !== skillId));
-    setHasUnsavedChanges(true);
-  };
-
-  // ✅ File upload to S3
-  const uploadToS3 = async (file, type) => {
-    try {
-      let folder = '';
-      if (type === 'resume') folder = 'resumes';
-      if (type === 'photo' || type === 'logo') folder = 'images';
-      if (type === 'video') folder = 'videos';
-      
-      const fileName = `${user.id}/${folder}/${file.name}`;
-      const fileBody = await file.arrayBuffer();
-      
-      const command = new PutObjectCommand({
-        Bucket: import.meta.env.VITE_AWS_BUCKET,
-        Key: fileName,
-        Body: new Uint8Array(fileBody),
-        ContentType: file.type,
-      });
-
-      await s3Client.send(command);
-      
-      const publicUrl = `https://${import.meta.env.VITE_AWS_BUCKET}.s3.${import.meta.env.VITE_AWS_REGION}.amazonaws.com/${fileName}`;
-      return publicUrl;
-    } catch (error) {
-      console.error('S3 Upload Error:', error);
-      throw error;
-    }
-  };
-
-  const handleFileUpload = async (file, type) => {
-    if (!file) return;
-    
-    const maxSize = type === 'video' ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      alert(`File too large. Maximum size is ${type === 'video' ? '50MB' : '5MB'}`);
-      return;
-    }
-    
-    setUploading(true);
-    
-    try {
-      const fileUrl = await uploadToS3(file, type);
-      const fileUrlWithTimestamp = `${fileUrl}?t=${Date.now()}`;
-      
-      const fieldName = type === 'photo' ? 'profilePhoto' : 
-                       type === 'logo' ? 'companyLogo' : 
-                       type === 'video' ? 'introVideo' : 'resume';
-                       
-      handleProfileChange(fieldName, fileUrlWithTimestamp);
-      alert(`${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully!`);
-    } catch (error) {
-      console.error('Upload failed:', error);
-      alert('Upload failed. Please try again.');
-    }
-    
-    setUploading(false);
-  };
-
-  // ✅ IMPROVED: Save Draft Function without annoying popups
-  const handleSaveDraft = async (showSuccessMessage = false) => {
-    setSaving(true);
-    
-    try {
-      const draftData = {
-        name: profile.name || '',
-        profilePhoto: profile.profilePhoto || '',
-        resume: profile.resume || '',
-        introVideo: profile.introVideo || '',
-        companyLogo: profile.companyLogo || '',
-        about: profile.about || '',
-        skills: selectedSkills.map(skill => skill.id),
-        lastModified: new Date().toISOString()
-      };
-
-      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draft: draftData })
-      });
-
-      if (response.ok) {
-        setHasDraft(true);
-        setIsDraft(true);
-        setHasUnsavedChanges(false);
-        setDraftData(draftData);
-        setLastAutoSaved(new Date().toISOString());
-        
-        // ✅ Only show alert if manually triggered
-        if (showSuccessMessage) {
-          alert('✅ Draft saved successfully!');
-        }
-        
-        console.log('✅ Draft saved to jobs.json');
-      } else {
-        throw new Error('Failed to save draft');
-      }
-    } catch (error) {
-      console.error('Error saving draft:', error);
-      
-      // ✅ Only show error alert if manually triggered
-      if (showSuccessMessage) {
-        alert('Failed to save draft. Please try again.');
-      }
-    }
-    
-    setSaving(false);
-  };
-
-  // ✅ PUBLISH PROFILE
-  const handlePublish = async () => {
-    if (!window.confirm('Are you sure you want to publish this profile? This will replace your current published version.')) {
-      return;
-    }
-
-    setSaving(true);
-    
-    try {
-      const publishedData = {
-        name: profile.name || '',
-        profilePhoto: profile.profilePhoto || '',
-        resume: profile.resume || '',
-        introVideo: profile.introVideo || '',
-        companyLogo: profile.companyLogo || '',
-        about: profile.about || '',
-        skills: selectedSkills.map(skill => skill.id),
-        profileStatus: 'published',
-        publishedAt: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-        draft: null
-      };
-
-      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(publishedData)
-      });
-
-      if (response.ok) {
-        const updatedUser = await response.json();
-        updateUser(updatedUser);
-        setHasDraft(false);
-        setIsDraft(false);
-        setIsEditing(false);
-        setHasUnsavedChanges(false);
-        alert('🎉 Profile published successfully!');
-        window.location.reload();
-      } else {
-        throw new Error('Failed to publish profile');
-      }
-    } catch (error) {
-      console.error('Error publishing profile:', error);
-      alert('Failed to publish profile');
-    }
-    
-    setSaving(false);
-  };
-
-  // ✅ DISCARD DRAFT
-  const handleDiscardDraft = async () => {
-    if (!window.confirm('Are you sure you want to discard all draft changes?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draft: null })
-      });
-
-      if (response.ok) {
-        setHasDraft(false);
-        setIsDraft(false);
-        setIsEditing(false);
-        setHasUnsavedChanges(false);
-        alert('Draft discarded');
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('Error discarding draft:', error);
-      alert('Failed to discard draft');
-    }
-  };
-
-  const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'color': [] }, { 'background': [] }],
-      ['link', 'image'],
-      ['clean']
-    ]
-  };
-
-  const getCurrentProfileImage = () => {
-    if (user?.role === 'developer') {
-      return profile.profilePhoto || 'https://placehold.co/120x120?text=Profile';
-    } else {
-      return profile.companyLogo || 'https://placehold.co/120x120?text=Logo';
-    }
-  };
-
-  const getFileName = (url) => {
-    if (!url) return '';
-    try {
-      const parts = url.split('/');
-      const fileName = parts[parts.length - 1];
-      return decodeURIComponent(fileName.split('?')[0]);
-    } catch {
-      return 'File';
-    }
-  };
-
-  // ✅ NEW: Track scroll position to show/hide action bar
-  const [showActionBar, setShowActionBar] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      // Show action bar when user scrolls down more than 200px
-      if (window.scrollY > 200) {
-        setShowActionBar(true);
-      } else {
-        setShowActionBar(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
+  // ✅ DEVELOPER PROFILE - keeping all existing JSX except removing the floating indicator
   return (
     <div className="profile-container">
       <FilePreviewModal
@@ -1038,7 +1030,7 @@ const ProfilePage = (props) => {
             />
           )}
 
-          {/* Profile Photo / Company Logo */}
+          {/* Profile Photo */}
           {user?.role === 'developer' && (
             <div className="form-group">
               <label>Profile Photo</label>
@@ -1220,7 +1212,7 @@ const ProfilePage = (props) => {
                       <div style={{fontWeight: '600', fontSize: '14px', color: '#495057'}}>
                         📹 {getFileName(profile.introVideo)}
                       </div>
-                      <small style={{color: '#6c757d'}}>Current: 1.mp4</small>
+                      <small style={{color: '#6c757d'}}>Current: intro.mp4</small>
                     </div>
                   </div>
 
@@ -1294,7 +1286,7 @@ const ProfilePage = (props) => {
             </div>
           )}
 
-          {/* ✅ ACTION BUTTONS AT THE BOTTOM - RIGHT AFTER VIDEO */}
+          {/* Action buttons */}
           <div style={{
             marginTop: '40px',
             paddingTop: '24px',
@@ -1305,7 +1297,6 @@ const ProfilePage = (props) => {
             gap: '20px',
             flexWrap: 'wrap'
           }}>
-            {/* Left side - Status info */}
             <div style={{flex: 1, minWidth: '200px'}}>
               {hasDraft && (
                 <div style={{
@@ -1341,7 +1332,6 @@ const ProfilePage = (props) => {
               )}
             </div>
             
-            {/* Right side - Action buttons */}
             <div style={{
               display: 'flex',
               gap: '12px',
@@ -1416,11 +1406,9 @@ const ProfilePage = (props) => {
               </button>
             </div>
           </div>
-
         </div>
       ) : (
         <div className="view-mode">
-          {/* ✅ NEW: Show draft notice in view mode */}
           {isDraft && (
             <div style={{
               background: '#fef3cd',
@@ -1514,7 +1502,6 @@ const ProfilePage = (props) => {
             </div>
           )}
           
-          {/* Resume and Video sections remain the same */}
           {user?.role === 'developer' && profile.resume && (
             <div className="resume-section" style={{marginTop: '30px'}}>
               <h3>Resume</h3>
@@ -1655,7 +1642,6 @@ const ProfilePage = (props) => {
                   </div>
                 </div>
                 
-                {/* ✅ FIXED: Better sized video player with proper aspect ratio */}
                 <div style={{
                   position: 'relative',
                   width: '100%',
@@ -1684,19 +1670,22 @@ const ProfilePage = (props) => {
                 </div>
                 
                 <p style={{
-        textAlign: 'center',
-        color: '#6c757d',
-        fontSize: '13px',
-        marginTop: '12px',
-        fontStyle: 'italic'
-      }}>
-        💡 Click "Full Screen" button above for better viewing experience
-      </p>
+                  textAlign: 'center',
+                  color: '#6c757d',
+                  fontSize: '13px',
+                  marginTop: '12px',
+                  fontStyle: 'italic'
+                }}>
+                  💡 Click "Full Screen" button above for better viewing experience
+                </p>
               </div>
             </div>
           )}
         </div>
       )}
+
+      {/* ❌ REMOVED: Floating Draft Status Indicator component */}
+      {/* The DraftStatusIndicator component call has been removed */}
     </div>
   );
 };

@@ -567,7 +567,21 @@
       "profileStatus": "published",
       "publishedAt": "2025-11-24T12:34:47.935Z",
       "lastModified": "2025-11-24T12:34:47.935Z",
-      "draft": null,
+      "draft": {
+        "name": "Akshitha Yadav BATH",
+        "profilePhoto": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/3/images/gh.jpg?t=1761319000269",
+        "resume": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/Akshitha/resumes/Test1-Akshitha.docx?t=1760171917933",
+        "introVideo": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/3/videos/1.mp4?t=1760458628793",
+        "companyLogo": "",
+        "about": "<p>Hii I am Akshitha, An Aspiring <strong>Full Stack Developer. Working as Intern at L4g solutions.</strong></p>",
+        "skills": [
+          "1",
+          "2",
+          "3",
+          "5"
+        ],
+        "lastModified": "2025-11-24T13:43:36.119Z"
+      },
       "draftData": null,
       "companyLogo": ""
     }
