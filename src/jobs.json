@@ -641,5 +641,75 @@
       "coverLetter": "hh",
       "resume": ""
     }
+  ],
+  "editingSessions": [],
+  "companies": [
+    {
+      "id": "1",
+      "name": "Tech Corp",
+      "email": "admin@techcorp.com",
+      "password": "tech@2024",
+      "description": "Tech Corp is a global leader in technology solutions.",
+      "logo": "https://techcorp.com/logo.png",
+      "website": "https://techcorp.com",
+      "industry": "Technology",
+      "sector": "Information Technology",
+      "companySize": "500-1000",
+      "numberOfEmployees": 750,
+      "foundedYear": 2010,
+      "headquarters": "San Francisco, CA",
+      "contactEmail": "contact@techcorp.com",
+      "contactPhone": "555-555-5555",
+      "socialLinks": {
+        "linkedin": "https://linkedin.com/company/techcorp",
+        "twitter": "https://twitter.com/techcorp",
+        "facebook": "https://facebook.com/techcorp"
+      },
+      "benefits": [
+        "Health Insurance",
+        "Stock Options",
+        "Remote Work Options",
+        "Professional Development"
+      ],
+      "culture": "Innovation, integrity, and excellence are at the core of our values.",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "isActive": true,
+      "profileStatus": "published",
+      "publishedAt": "2025-10-01T12:00:00.000Z",
+      "lastModified": "2025-11-24T08:24:40.296Z",
+      "draft": {
+        "name": "Tech Corp",
+        "description": "Tech Corp is a global leader in technology solutions.",
+        "logo": "https://techcorp.com/logo.png",
+        "website": "https://techcorp.com",
+        "contactEmail": "contact@techcorp.com",
+        "contactPhone": "555-555-5555",
+        "industry": "Technology",
+        "companySize": "500-1000",
+        "socialLinks": {
+          "linkedin": "https://linkedin.com/company/techcorp",
+          "twitter": "https://twitter.com/techcorp",
+          "facebook": "https://facebook.com/techcorp"
+        },
+        "lastModified": "2025-11-24T08:24:40.296Z",
+        "profileStatus": "draft"
+      },
+      "editingSessions": {
+        "activeEditors": [
+          {
+            "userId": "hr1",
+            "userName": "John HR",
+            "startTime": "2025-11-24T10:30:00.000Z",
+            "lastActivity": "2025-11-24T10:35:00.000Z",
+            "editingSection": "basic-info"
+          }
+        ],
+        "lockedSections": {
+          "basic-info": "hr1",
+          "jobs": null,
+          "team": "hr2"
+        }
+      }
+    }
   ]
 }

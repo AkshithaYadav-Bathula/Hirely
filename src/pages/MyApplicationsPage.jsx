@@ -22,14 +22,25 @@ const MyApplicationsPage = () => {
         const appsData = await appsResponse.json();
         setApplications(appsData);
 
-        // Fetch job details for each application
+        // Fetch job details for each application - WITH ERROR HANDLING
         const jobIds = [...new Set(appsData.map(app => app.jobId))];
-        const jobPromises = jobIds.map(id => 
-          fetch(`http://localhost:8000/jobs/${id}`).then(res => res.json())
-        );
+        const jobPromises = jobIds.map(async (id) => {
+          try {
+            const response = await fetch(`http://localhost:8000/jobs/${id}`);
+            if (!response.ok) {
+              console.warn(`Job ${id} not found (404)`);
+              return null; // Return null for missing jobs
+            }
+            return await response.json();
+          } catch (error) {
+            console.warn(`Error fetching job ${id}:`, error);
+            return null;
+          }
+        });
+        
         const jobsData = await Promise.all(jobPromises);
         
-        // Create jobs map
+        // Create jobs map, filtering out null values
         const jobsMap = {};
         jobsData.forEach(job => {
           if (job && job.id) jobsMap[job.id] = job;
@@ -151,15 +162,20 @@ const MyApplicationsPage = () => {
                               {job.title}
                             </Link>
                           ) : (
-                            <span className="text-gray-500">Job not found</span>
+                            <span className="text-gray-500">Job not found (ID: {application.jobId})</span>
                           )}
                         </h3>
                         {job && (
                           <div className="space-y-1 text-sm text-gray-600 mb-3">
-                            <p><i className="fas fa-building mr-2"></i>{job.company?.name}</p>
+                            <p><i className="fas fa-building mr-2"></i>{job.company?.name || 'Company not available'}</p>
                             <p><i className="fas fa-map-marker-alt mr-2"></i>{job.location}</p>
                             <p><i className="fas fa-briefcase mr-2"></i>{job.type}</p>
                             {job.salary && <p><i className="fas fa-dollar-sign mr-2"></i>{job.salary}</p>}
+                          </div>
+                        )}
+                        {!job && (
+                          <div className="space-y-1 text-sm text-gray-500 mb-3">
+                            <p>This job post may have been removed or is no longer available.</p>
                           </div>
                         )}
                       </div>

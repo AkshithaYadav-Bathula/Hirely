@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaMapMarker } from 'react-icons/fa';
+import { FaMapMarker, FaBuilding } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const JobListing = ({ job }) => {
@@ -13,7 +13,7 @@ const JobListing = ({ job }) => {
   const companyId = job.company?.id ?? job.companyId;
 
   return (
-    <div className='bg-white rounded-xl shadow-md relative'>
+    <div className='bg-white rounded-xl shadow-md relative hover:shadow-lg transition-shadow duration-300'>
       <div className='p-4'>
         <div className='mb-6'>
           <div className='text-gray-600 my-2'>{job.type}</div>
@@ -46,31 +46,30 @@ const JobListing = ({ job }) => {
           </Link>
         </div>
 
-        {/* company line - only render if we have a company id/name */}
+        {/* Company section with improved styling */}
         {companyId && job.company?.name && (
-          <div className='company-line mt-2'>
-            <Link
-              to={`/company/${companyId}`}
-              className='text-indigo-600 hover:underline font-medium'
-            >
-              {job.company.name}
-            </Link>
-          </div>
-        )}
-
-        {/* nicer "View Company" button, only if we have companyId */}
-        {companyId && (
-          <div className='mt-3'>
-            <Link
-              to={`/company/${companyId}`}
-              className='inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded shadow-sm hover:bg-indigo-200 transition-colors text-sm'
-            >
-              View Company
-            </Link>
+          <div className='border-t border-gray-100 pt-4 mt-4'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center space-x-2'>
+                <FaBuilding className='text-gray-500 text-sm' />
+                <span className='text-gray-700 font-medium text-sm'>
+                  {job.company.name}
+                </span>
+              </div>
+              <Link
+                to={`/company/${companyId}`}
+                className='group relative inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-300 rounded-lg text-gray-700 text-sm font-medium hover:from-indigo-50 hover:to-indigo-100 hover:border-indigo-300 hover:text-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+              >
+                <FaBuilding className='mr-2 text-xs group-hover:text-indigo-600' />
+                View Company
+                <div className='absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-700 opacity-0 group-hover:opacity-5 transition-opacity duration-300'></div>
+              </Link>
+            </div>
           </div>
         )}
       </div>
     </div>
   );
 };
+
 export default JobListing;
