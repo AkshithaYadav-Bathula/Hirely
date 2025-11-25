@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/images/logo.png';
 
@@ -7,6 +7,8 @@ const Navbar = () => {
   const { user, logout, isAuthenticated, hasRole } = useAuth();
   const [showProfile, setShowProfile] = useState(false);
   const dropdownRef = useRef();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -18,6 +20,14 @@ const Navbar = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Redirect companies to dashboard if they're on login/register pages
+  useEffect(() => {
+    if (user?.role === 'employer' && 
+        (location.pathname === '/login' || location.pathname === '/register')) {
+      navigate('/company-dashboard', { replace: true });
+    }
+  }, [user, location.pathname, navigate]);
 
   const linkClass = ({ isActive }) =>
     isActive
@@ -80,6 +90,13 @@ const Navbar = () => {
                         <NavLink to='/my-jobs' className={linkClass}>
                           My Jobs
                         </NavLink>
+                        {/* Add this link for employers */}
+                        <Link
+                          to='/company-dashboard'
+                          className='text-white hover:bg-indigo-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium'
+                        >
+                          Dashboard
+                        </Link>
                       </>
                     )}
 

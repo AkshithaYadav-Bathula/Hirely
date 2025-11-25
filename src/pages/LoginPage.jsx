@@ -50,31 +50,16 @@ const LoginPage = () => {
 
       setLoading(true);
 
-      try {
-        // Fetch companies and verify credentials
-        const response = await fetch('http://localhost:8000/companies');
-        const companies = await response.json();
-        
-        const company = companies.find(
-          c => c.email?.toLowerCase() === formData.companyEmail.toLowerCase() && 
-               c.password === formData.companyPassword
-        );
-
-        if (company) {
-          // Store company session
-          localStorage.setItem('company', JSON.stringify(company));
-          localStorage.setItem('accountType', 'company');
-          
-          toast.success(`Welcome back, ${company.name}!`);
-          navigate('/company-dashboard');
-        } else {
-          toast.error('Invalid company credentials');
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-        toast.error('Login failed. Please try again.');
+      // Pass 'company' as third parameter to indicate company login
+      const result = await login(formData.companyEmail, formData.companyPassword, 'company');
+      
+      if (result.success) {
+        toast.success('Login successful!');
+        navigate('/company-dashboard'); // Navigate to company dashboard
+      } else {
+        toast.error(result.error || 'Invalid company credentials');
       }
-
+      
       setLoading(false);
 
     } else {
@@ -177,10 +162,9 @@ const LoginPage = () => {
                 </>
               ) : (
                 <>
-                  <p><strong>Company:</strong> contact@newteksolutions.com / company123</p>
-                  <p className="text-blue-600 mt-1">
-                    💡 Use company email registered during signup
-                  </p>
+                  <p><strong>NewTek Solutions:</strong> admin@newteksolutions.com / newtek@2024</p>
+                  <p><strong>L4G Solutions:</strong> l4g@gmail.com / l4g123</p>
+                  <p><strong>Veneer Solutions:</strong> admin@veneer.com / veneer@2024</p>
                 </>
               )}
             </div>

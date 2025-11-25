@@ -30,7 +30,7 @@ const App = () => {
   // Add New Job — called by AddJobPage via prop addJobSubmit
   const addJob = async (newJob) => {
     try {
-      const res = await fetch('/api/jobs', {
+      const res = await fetch('http://localhost:8000/jobs', { // ← FIXED
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,7 +52,7 @@ const App = () => {
   // Delete Job — used by JobPage via prop deleteJob
   const deleteJob = async (id) => {
     try {
-      const res = await fetch(`/api/jobs/${id}`, {
+      const res = await fetch(`http://localhost:8000/jobs/${id}`, { // ← FIXED
         method: 'DELETE',
       });
       
@@ -70,7 +70,7 @@ const App = () => {
   // Update Job - used by EditJobPage via prop updateJobSubmit
   const updateJob = async (job) => {
     try {
-      const res = await fetch(`/api/jobs/${job.id}`, {
+      const res = await fetch(`http://localhost:8000/jobs/${job.id}`, { // ← FIXED
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ const App = () => {
   // Apply to Job - for developers to apply to jobs
   const applyToJob = async (jobId, applicationData) => {
     try {
-      const res = await fetch('/api/applications', {
+      const res = await fetch('http://localhost:8000/applications', { // ← FIXED
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ const App = () => {
   // Save Job - for developers to save jobs for later
   const saveJob = async (jobId, developerId) => {
     try {
-      const res = await fetch('/api/saved-jobs', {
+      const res = await fetch('http://localhost:8000/saved-jobs', { // ← FIXED
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ const App = () => {
   // Remove Saved Job
   const removeSavedJob = async (savedJobId) => {
     try {
-      const res = await fetch(`/api/saved-jobs/${savedJobId}`, {
+      const res = await fetch(`http://localhost:8000/saved-jobs/${savedJobId}`, { // ← FIXED
         method: 'DELETE',
       });
       
@@ -187,7 +187,7 @@ const App = () => {
         <Route
           path='/add-job'
           element={
-            <ProtectedRoute roles={['employer', 'admin']}>
+            <ProtectedRoute roles={['employer', 'company','admin']}>
               <AddJobPage addJobSubmit={addJob} />
             </ProtectedRoute>
           }
@@ -195,7 +195,7 @@ const App = () => {
         <Route
           path='/edit-job/:id'
           element={
-            <ProtectedRoute roles={['employer', 'admin']}>
+            <ProtectedRoute roles={['employer','company', 'admin']}>
               <EditJobPage updateJobSubmit={updateJob} />
             </ProtectedRoute>
           }
@@ -204,7 +204,7 @@ const App = () => {
         <Route
           path="/my-job/:id"
           element={
-            <ProtectedRoute roles={['employer']}>
+            <ProtectedRoute roles={['employer', 'company']}>
               <MyJobApplicantsPage />
             </ProtectedRoute>
           }
@@ -239,7 +239,7 @@ const App = () => {
         <Route
           path='/my-jobs'
           element={
-            <ProtectedRoute roles={['employer']}>
+            <ProtectedRoute roles={['employer','company']}>
                <MyJobsPage />
             </ProtectedRoute>
           }
@@ -280,7 +280,14 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/company-dashboard" element={<CompanyDashboardPage />} />
+        <Route
+          path="/company-dashboard"
+          element={
+            <ProtectedRoute roles={['employer','company']}>
+              <CompanyDashboardPage />
+            </ProtectedRoute>
+          }
+        />
         {/* use unified ProfilePage for company view (ProfilePage will fetch fallback data if no loader) */}
         <Route path="/company/:id" element={<ProfilePage />} />
 

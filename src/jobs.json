@@ -133,7 +133,7 @@
       "email": "admin@newteksolutions.com",
       "password": "newtek@2024",
       "description": "NewTek Solutions is a leading technology company specializing in web development and digital solutions.",
-      "logo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
+      "logo": "https://placehold.co/200x200/4F46E5/FFFFFF?text=NewTek",
       "website": "https://newteksolutions.com",
       "industry": "Technology",
       "sector": "Information Technology",
@@ -143,6 +143,20 @@
       "headquarters": "Boston, MA",
       "contactEmail": "contact@teksolutions.com",
       "contactPhone": "555-555-5555",
+      "analytics": {
+        "totalRevenue": 2500000,
+        "monthlyRevenue": 208333,
+        "totalProjects": 25,
+        "activeProjects": 8,
+        "completedProjects": 17,
+        "totalClients": 45,
+        "activeClients": 32,
+        "employeeGrowthRate": 15.5,
+        "projectSuccessRate": 92.3,
+        "clientSatisfactionRate": 4.7,
+        "averageProjectValue": 100000,
+        "monthlyGrowth": 8.2
+      },
       "socialLinks": {
         "linkedin": "",
         "twitter": "",
@@ -184,7 +198,7 @@
       "email": "admin@veneer.com",
       "password": "veneer@2024",
       "description": "Veneer Solutions is a creative agency specializing in digital design and development.",
-      "logo": "",
+      "logo": "https://placehold.co/200x200/059669/FFFFFF?text=Veneer",
       "website": "https://veneer.com",
       "industry": "Creative Agency",
       "sector": "Marketing & Advertising",
@@ -194,6 +208,20 @@
       "headquarters": "Remote",
       "contactEmail": "contact@veneer.com",
       "contactPhone": "555-555-5555",
+      "analytics": {
+        "totalRevenue": 850000,
+        "monthlyRevenue": 70833,
+        "totalProjects": 45,
+        "activeProjects": 12,
+        "completedProjects": 33,
+        "totalClients": 28,
+        "activeClients": 18,
+        "employeeGrowthRate": 22.5,
+        "projectSuccessRate": 88.9,
+        "clientSatisfactionRate": 4.5,
+        "averageProjectValue": 18889,
+        "monthlyGrowth": 12.5
+      },
       "socialLinks": {
         "linkedin": "",
         "twitter": "",
@@ -230,120 +258,49 @@
     },
     {
       "id": "c3",
-      "name": "Dolor Cloud",
-      "email": "admin@dolorcloud.com",
-      "description": "Cloud & SaaS provider.",
-      "website": "https://dolorcloud.com",
-      "industry": "Cloud",
-      "companySize": "200-500",
-      "profileStatus": "published",
-      "publishedAt": "2025-10-01T12:00:00.000Z",
-      "draft": {
-        "profileStatus": "draft",
-        "lastModified": "2025-11-24T08:24:40.296Z"
-      }
-    },
-    {
-      "id": "c4",
-      "name": "Alpha Elite",
-      "email": "admin@alphaelite.com",
-      "description": "Creative tech studio.",
-      "website": "https://alphaelite.com",
-      "industry": "Technology",
-      "companySize": "50-200",
-      "profileStatus": "published",
-      "publishedAt": "2025-10-01T12:00:00.000Z",
-      "draft": {
-        "profileStatus": "draft",
-        "lastModified": "2025-11-24T08:24:40.296Z"
-      }
-    },
-    {
-      "id": "c5",
-      "name": "Browning Technologies",
-      "email": "admin@browningtech.com",
-      "description": "E-commerce & retail tech.",
-      "website": "https://browningtech.com",
-      "industry": "Technology",
-      "companySize": "500-1000",
-      "profileStatus": "published",
-      "publishedAt": "2025-10-01T12:00:00.000Z",
-      "draft": {
-        "profileStatus": "draft",
-        "lastModified": "2025-11-24T08:24:40.296Z"
-      }
-    },
-    {
-      "id": "c6",
-      "name": "Tech Innovations Inc",
-      "email": "admin@techinnovations.com",
-      "description": "Enterprise software and services.",
-      "website": "https://techinnovations.com",
-      "industry": "Technology",
-      "companySize": "1000+",
-      "profileStatus": "published",
-      "publishedAt": "2025-10-01T12:00:00.000Z",
-      "draft": {
-        "profileStatus": "draft",
-        "lastModified": "2025-11-24T08:24:40.296Z"
-      }
-    },
-    {
-      "id": "c7",
-      "name": "Starter Tech",
-      "email": "admin@startertech.com",
-      "description": "Startup focused on junior devs.",
-      "website": "https://startertech.com",
-      "industry": "Technology",
-      "companySize": "10-50",
-      "profileStatus": "published",
-      "publishedAt": "2025-10-01T12:00:00.000Z",
-      "draft": {
-        "profileStatus": "draft",
-        "lastModified": "2025-11-24T08:24:40.296Z"
-      }
-    },
-    {
-      "id": "c8",
-      "name": "L4G Solutions Private Limited",
-      "email": "admin@l4gsolutions.com",
-      "description": "L4G is a software company located in Hyderabad",
-      "website": "https://l4gsolutions.com",
-      "industry": "Technology",
-      "companySize": "50-200",
-      "profileStatus": "published",
-      "publishedAt": "2025-10-01T12:00:00.000Z",
-      "logo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
-      "draft": {
-        "profileStatus": "draft",
-        "lastModified": "2025-08-23T03:37:02.066Z"
-      }
-    },
-    {
-      "id": "c1763979712779",
-      "name": "L4G Solutions Private Limited ",
+      "name": "L4G Solutions",
       "email": "l4g@gmail.com",
       "password": "l4g123",
-      "description": "",
-      "logo": "",
-      "website": "",
-      "industry": "",
-      "sector": "",
+      "description": "L4G is a software company located in Hyderabad",
+      "logo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
+      "website": "https://l4gsolutions.com",
+      "industry": "Technology",
+      "sector": "Software Development",
       "companySize": "1-10",
-      "numberOfEmployees": 0,
+      "numberOfEmployees": 8,
       "foundedYear": 2025,
       "headquarters": "Hyd, India",
       "contactEmail": "l4g@gmail.com",
       "contactPhone": "9999999999",
-      "socialLinks": {
-        "linkedin": "",
-        "twitter": "",
-        "facebook": ""
+      "analytics": {
+        "totalRevenue": 450000,
+        "monthlyRevenue": 110750,
+        "totalProjects": 12,
+        "activeProjects": 5,
+        "completedProjects": 7,
+        "totalClients": 10,
+        "activeClients": 6,
+        "employeeGrowthRate": 60.0,
+        "projectSuccessRate": 95.0,
+        "clientSatisfactionRate": 4.8,
+        "averageProjectValue": 37500,
+        "monthlyGrowth": 25.0
       },
-      "benefits": [],
-      "culture": "",
+      "socialLinks": {
+        "linkedin": "https://linkedin.com/company/l4g",
+        "twitter": "https://twitter.com/l4g",
+        "facebook": "https://facebook.com/l4g"
+      },
+      "benefits": [
+        "Flexible Work Hours",
+        "Remote Options",
+        "Learning & Development Budget"
+      ],
+      "culture": "Fast-paced startup culture with focus on innovation and learning",
       "createdAt": "2025-11-24T10:21:52.779Z",
-      "isActive": true
+      "isActive": true,
+      "profileStatus": "published",
+      "publishedAt": "2025-11-24T10:21:52.779Z"
     }
   ],
   "jobs": [
@@ -469,9 +426,9 @@
       ],
       "company": {
         "id": "c3",
-        "name": "Dolor Cloud",
-        "logo": "",
-        "website": "https://dolorcloud.com"
+        "name": "L4G Solutions",
+        "logo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
+        "website": "https://l4gsolutions.com"
       },
       "companyDraft": null,
       "companyPublishedAt": "2025-10-01T12:00:00.000Z",
@@ -489,15 +446,15 @@
       "location": "Bangalore",
       "description": "Understand java",
       "salary": "$125K - 150K",
-      "companyId": "c8",
+      "companyId": "c3",
       "employerId": "1755918317158",
       "createdAt": "2025-08-23T03:37:02.066Z",
       "status": "active",
       "requiredSkills": [],
       "preferredSkills": [],
       "company": {
-        "id": "c8",
-        "name": "L4G Solutions Private Limited",
+        "id": "c3",
+        "name": "L4G Solutions",
         "logo": "https://news-video-input.s3.ap-south-1.amazonaws.com/Akshitha/images/l4g.jpeg",
         "website": "https://l4gsolutions.com"
       },
@@ -584,6 +541,48 @@
       },
       "draftData": null,
       "companyLogo": ""
+    },
+    {
+      "id": "4",
+      "email": "lisa@newteksolutions.com",
+      "password": "lisa123",
+      "firstName": "Lisa",
+      "lastName": "Smith",
+      "role": "employer",
+      "companyId": "c1",
+      "position": "HR Manager",
+      "createdAt": "2024-02-01T00:00:00Z",
+      "isActive": true,
+      "profilePhoto": "",
+      "about": "Experienced recruiter with focus on tech talent."
+    },
+    {
+      "id": "5",
+      "email": "john@newteksolutions.com",
+      "password": "john123",
+      "firstName": "John",
+      "lastName": "Lincoln",
+      "role": "employer",
+      "companyId": "c1",
+      "position": "HR Manager",
+      "createdAt": "2024-03-01T00:00:00Z",
+      "isActive": true,
+      "profilePhoto": "",
+      "about": "Talent acquisition specialist."
+    },
+    {
+      "id": "6",
+      "email": "bob@l4g.com",
+      "password": "bob123",
+      "firstName": "Bob",
+      "lastName": "Wilson",
+      "role": "employer",
+      "companyId": "c3",
+      "position": "Tech Recruiter",
+      "createdAt": "2024-04-01T00:00:00Z",
+      "isActive": true,
+      "profilePhoto": "",
+      "about": "Finding the best developers for our team."
     }
   ],
   "applications": [
@@ -642,74 +641,5 @@
       "resume": ""
     }
   ],
-  "editingSessions": [],
-  "companies": [
-    {
-      "id": "1",
-      "name": "Tech Corp",
-      "email": "admin@techcorp.com",
-      "password": "tech@2024",
-      "description": "Tech Corp is a global leader in technology solutions.",
-      "logo": "https://techcorp.com/logo.png",
-      "website": "https://techcorp.com",
-      "industry": "Technology",
-      "sector": "Information Technology",
-      "companySize": "500-1000",
-      "numberOfEmployees": 750,
-      "foundedYear": 2010,
-      "headquarters": "San Francisco, CA",
-      "contactEmail": "contact@techcorp.com",
-      "contactPhone": "555-555-5555",
-      "socialLinks": {
-        "linkedin": "https://linkedin.com/company/techcorp",
-        "twitter": "https://twitter.com/techcorp",
-        "facebook": "https://facebook.com/techcorp"
-      },
-      "benefits": [
-        "Health Insurance",
-        "Stock Options",
-        "Remote Work Options",
-        "Professional Development"
-      ],
-      "culture": "Innovation, integrity, and excellence are at the core of our values.",
-      "createdAt": "2024-01-01T00:00:00Z",
-      "isActive": true,
-      "profileStatus": "published",
-      "publishedAt": "2025-10-01T12:00:00.000Z",
-      "lastModified": "2025-11-24T08:24:40.296Z",
-      "draft": {
-        "name": "Tech Corp",
-        "description": "Tech Corp is a global leader in technology solutions.",
-        "logo": "https://techcorp.com/logo.png",
-        "website": "https://techcorp.com",
-        "contactEmail": "contact@techcorp.com",
-        "contactPhone": "555-555-5555",
-        "industry": "Technology",
-        "companySize": "500-1000",
-        "socialLinks": {
-          "linkedin": "https://linkedin.com/company/techcorp",
-          "twitter": "https://twitter.com/techcorp",
-          "facebook": "https://facebook.com/techcorp"
-        },
-        "lastModified": "2025-11-24T08:24:40.296Z",
-        "profileStatus": "draft"
-      },
-      "editingSessions": {
-        "activeEditors": [
-          {
-            "userId": "hr1",
-            "userName": "John HR",
-            "startTime": "2025-11-24T10:30:00.000Z",
-            "lastActivity": "2025-11-24T10:35:00.000Z",
-            "editingSection": "basic-info"
-          }
-        ],
-        "lockedSections": {
-          "basic-info": "hr1",
-          "jobs": null,
-          "team": "hr2"
-        }
-      }
-    }
-  ]
+  "editingSessions": []
 }

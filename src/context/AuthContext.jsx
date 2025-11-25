@@ -22,35 +22,35 @@ export const AuthProvider = ({ children }) => {
         if (savedUser) {
           const userData = JSON.parse(savedUser);
 
-          // resolve endpoint by role so company sessions are loaded correctly
-          let endpoint = '/api/users';
-          if (userData.role === 'company') endpoint = '/api/companies';
-          else if (userData.role === 'employer') endpoint = '/api/employers';
+          // Resolve endpoint by role so company sessions are loaded correctly
+          let endpoint = 'http://localhost:8000/users';
+          if (userData.role === 'company') {
+            endpoint = 'http://localhost:8000/companies';
+          }
 
           const response = await fetch(`${endpoint}/${userData.id}`);
           if (response.ok) {
             const fetched = await response.json();
-            // remove sensitive fields and keep role
+            // Remove sensitive fields and keep role
             const safe = { ...fetched };
             if (safe.password) delete safe.password;
-            // ensure role remains set for company/employer
+            if (safe.companyPassword) delete safe.companyPassword;
+            // Ensure role remains set for company/employer
             if (!safe.role && userData.role) safe.role = userData.role;
             setUser(safe);
           } else {
             sessionStorage.removeItem('currentUser');
           }
         } else {
-          // --- NEW: support company sessions saved directly to localStorage (LoginPage stores 'company') ---
+          // Support company sessions saved directly to localStorage
           const storedCompany = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('company') || 'null') : null;
           if (storedCompany) {
-            
             const companySafe = { ...storedCompany, role: 'company' };
             if (companySafe.password) delete companySafe.password;
             if (companySafe.companyPassword) delete companySafe.companyPassword;
-            if (companySafe && !companySafe.role) companySafe.role = "company";
 
             setUser(companySafe);
-            // keep sessionStorage in sync for the rest of the app
+            // Keep sessionStorage in sync for the rest of the app
             sessionStorage.setItem('currentUser', JSON.stringify(companySafe));
           }
         }
@@ -65,66 +65,58 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, accountType = 'user') => {
     try {
       setLoading(true);
       
-      // try users first
-      const response = await fetch('/api/users');
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
-      
-      const users = await response.json();
-      const foundUser = users.find(u => u.email === email && u.password === password && u.isActive);
-      
-      if (foundUser) {
-        const userWithoutPassword = { ...foundUser };
-        delete userWithoutPassword.password;
-        
-        setUser(userWithoutPassword);
-        sessionStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
-        return { success: true };
-      }
-
-      // if not a regular user, try companies endpoint
-      try {
-        const cRes = await fetch('/api/companies');
-        if (cRes.ok) {
-          const companies = await cRes.json();
-          const foundCompany = companies.find(c => (c.email === email || c.contactEmail === email) && (c.password === password || c.companyPassword === password));
+      if (accountType === 'company') {
+        // ✅ COMPANY LOGIN - Check companies collection
+        const companiesRes = await fetch('http://localhost:8000/companies');
+        if (companiesRes.ok) {
+          const companies = await companiesRes.json();
+          const foundCompany = companies.find(c => 
+            c.email === email && c.password === password
+          );
+          
           if (foundCompany) {
-            const companySafe = { ...foundCompany, role: 'company' };
+            const companySafe = { 
+              ...foundCompany, 
+              role: 'company' // ✅ FIXED: Set role to 'company'
+            };
             delete companySafe.password;
             delete companySafe.companyPassword;
+            
+            console.log('✅ Company Login Success:', companySafe);
             setUser(companySafe);
             sessionStorage.setItem('currentUser', JSON.stringify(companySafe));
+            localStorage.setItem('company', JSON.stringify(companySafe));
             return { success: true };
           }
         }
-      } catch (err) {
-        console.warn('Companies lookup failed', err);
-      }
-
-      // finally try employers collection (if you have one)
-      try {
-        const eRes = await fetch('/api/employers');
-        if (eRes.ok) {
-          const employers = await eRes.json();
-          const foundEmployer = employers.find(e => e.email === email && e.password === password);
-          if (foundEmployer) {
-            const employerSafe = { ...foundEmployer, role: 'employer' };
-            delete employerSafe.password;
-            setUser(employerSafe);
-            sessionStorage.setItem('currentUser', JSON.stringify(employerSafe));
-            return { success: true };
-          }
+        
+        return { success: false, error: 'Invalid company credentials' };
+      } else {
+        // ✅ USER LOGIN - Check users collection
+        const usersRes = await fetch('http://localhost:8000/users');
+        if (!usersRes.ok) {
+          throw new Error('Failed to fetch users');
         }
-      } catch (err) {
-        console.warn('Employers lookup failed', err);
-      }
+        
+        const users = await usersRes.json();
+        const foundUser = users.find(u => u.email === email && u.password === password && u.isActive);
+        
+        if (foundUser) {
+          const userWithoutPassword = { ...foundUser };
+          delete userWithoutPassword.password;
+          
+          console.log('✅ User Login Success:', userWithoutPassword);
+          setUser(userWithoutPassword);
+          sessionStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
+          return { success: true };
+        }
 
-      return { success: false, error: 'Invalid email or password' };
+        return { success: false, error: 'Invalid email or password' };
+      }
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, error: 'Login failed. Please try again.' };
@@ -137,7 +129,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       
-      const response = await fetch('/api/users');
+      const response = await fetch('http://localhost:8000/users');
       const users = await response.json();
       
       const existingUser = users.find(u => u.email === userData.email);
@@ -153,8 +145,9 @@ export const AuthProvider = ({ children }) => {
         lastName: userData.lastName,
         name: `${userData.firstName} ${userData.lastName}`,
         role: userData.role,
-        company: userData.company || null,
+        companyId: userData.companyId || null,
         skills: userData.role === 'developer' ? userData.skills || [] : undefined,
+        position: userData.position || undefined,
         createdAt: new Date().toISOString(),
         isActive: true,
         profilePhoto: '',
@@ -169,7 +162,7 @@ export const AuthProvider = ({ children }) => {
         delete newUser.skills;
       }
 
-      const createResponse = await fetch('/api/users', {
+      const createResponse = await fetch('http://localhost:8000/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -199,6 +192,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     sessionStorage.removeItem('currentUser');
+    localStorage.removeItem('company');
+    localStorage.removeItem('accountType');
   };
 
   const hasRole = (role) => {
@@ -213,7 +208,6 @@ export const AuthProvider = ({ children }) => {
     return user !== null;
   };
 
-  // ✅ ADD updateUser function
   const updateUser = (updatedUserData) => {
     const updatedUser = { ...user, ...updatedUserData };
     setUser(updatedUser);
@@ -224,7 +218,7 @@ export const AuthProvider = ({ children }) => {
     if (!hasRole('admin')) return [];
     
     try {
-      const response = await fetch('/api/users');
+      const response = await fetch('http://localhost:8000/users');
       if (response.ok) {
         const users = await response.json();
         return users.map(user => {
@@ -245,6 +239,11 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
+      // Determine endpoint based on role
+      const endpoint = user.role === 'company' 
+        ? `http://localhost:8000/companies/${user.id}`
+        : `http://localhost:8000/users/${user.id}`;
+
       const updatedUser = {
         ...user,
         ...updatedData,
@@ -253,7 +252,7 @@ export const AuthProvider = ({ children }) => {
         role: user.role
       };
 
-      const response = await fetch(`/api/users/${user.id}`, {
+      const response = await fetch(endpoint, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -265,9 +264,14 @@ export const AuthProvider = ({ children }) => {
         const savedUser = await response.json();
         const userWithoutPassword = { ...savedUser };
         delete userWithoutPassword.password;
+        delete userWithoutPassword.companyPassword;
         
         setUser(userWithoutPassword);
         sessionStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
+        
+        if (user.role === 'company') {
+          localStorage.setItem('company', JSON.stringify(userWithoutPassword));
+        }
         
         return { success: true };
       } else {
@@ -282,7 +286,7 @@ export const AuthProvider = ({ children }) => {
 
   const getSkills = async () => {
     try {
-      const response = await fetch('/api/skills');
+      const response = await fetch('http://localhost:8000/skills');
       if (response.ok) {
         const data = await response.json();
         return data.skills || data;
@@ -317,7 +321,7 @@ export const AuthProvider = ({ children }) => {
     hasRole,
     hasAnyRole,
     isAuthenticated,
-    updateUser, // ✅ Export updateUser
+    updateUser,
     loading,
     getAllUsers,
     updateProfile,
