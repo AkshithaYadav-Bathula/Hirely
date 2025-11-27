@@ -132,7 +132,7 @@
       "name": "NewTek Solutions",
       "email": "admin@newteksolutions.com",
       "password": "newtek@2024",
-      "description": "NewTek Solutions is a leading technology company specializing in web development and digital solutions.",
+      "description": "NewTek Solutions is a leading technology company specializing in web development and digital solutions.aaaaaagdgd",
       "logo": "https://placehold.co/200x200/4F46E5/FFFFFF?text=NewTek",
       "website": "https://newteksolutions.com",
       "industry": "Technology",
@@ -280,11 +280,11 @@
         "completedProjects": 7,
         "totalClients": 10,
         "activeClients": 6,
-        "employeeGrowthRate": 60.0,
-        "projectSuccessRate": 95.0,
+        "employeeGrowthRate": 60,
+        "projectSuccessRate": 95,
         "clientSatisfactionRate": 4.8,
         "averageProjectValue": 37500,
-        "monthlyGrowth": 25.0
+        "monthlyGrowth": 25
       },
       "socialLinks": {
         "linkedin": "https://linkedin.com/company/l4g",
@@ -505,6 +505,7 @@
       "skills": [
         "1",
         "2",
+        "3",
         "5"
       ],
       "savedJobs": [
@@ -516,29 +517,15 @@
       ],
       "createdAt": "2024-01-03T00:00:00Z",
       "isActive": true,
-      "name": "Akshitha Yadav BATH",
+      "name": "Akshitha Yadav BATHuy",
       "profilePhoto": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/3/images/gh.jpg?t=1761319000269",
       "resume": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/Akshitha/resumes/Test1-Akshitha.docx?t=1760171917933",
       "introVideo": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/3/videos/1.mp4?t=1760458628793",
-      "about": "<p>Hii I am Akshitha, An Aspiring <strong>Full Stack Developer </strong></p>",
+      "about": "<p>Hii I am Akshitha, An Aspiring <strong>Full Stack Developer. Working as Intern at L4g solutions.</strong></p>",
       "profileStatus": "published",
-      "publishedAt": "2025-11-24T12:34:47.935Z",
-      "lastModified": "2025-11-24T12:34:47.935Z",
-      "draft": {
-        "name": "Akshitha Yadav BATH",
-        "profilePhoto": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/3/images/gh.jpg?t=1761319000269",
-        "resume": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/Akshitha/resumes/Test1-Akshitha.docx?t=1760171917933",
-        "introVideo": "https://4g-s3-upload.s3.ap-south-1.amazonaws.com/3/videos/1.mp4?t=1760458628793",
-        "companyLogo": "",
-        "about": "<p>Hii I am Akshitha, An Aspiring <strong>Full Stack Developer. Working as Intern at L4g solutions.</strong></p>",
-        "skills": [
-          "1",
-          "2",
-          "3",
-          "5"
-        ],
-        "lastModified": "2025-11-24T13:43:36.119Z"
-      },
+      "publishedAt": "2025-11-25T08:31:50.954Z",
+      "lastModified": "2025-11-25T08:31:50.954Z",
+      "draft": null,
       "draftData": null,
       "companyLogo": ""
     },
@@ -639,6 +626,15 @@
       "appliedAt": "2025-11-15T00:01:15.053Z",
       "coverLetter": "hh",
       "resume": ""
+    },
+    {
+      "id": "1764059388586",
+      "jobId": "3",
+      "developerId": "3",
+      "coverLetter": "I ",
+      "resume": "",
+      "status": "pending",
+      "appliedAt": "2025-11-25T08:29:48.586Z"
     }
   ],
   "editingSessions": []

@@ -14,10 +14,12 @@ import {
   FaPlus,
   FaArrowUp
 } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 const CompanyDashboardPage = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const companyId = searchParams.get('companyId');
   const [dashboardData, setDashboardData] = useState({
     company: null,
     totalJobs: 0,
@@ -32,6 +34,10 @@ const CompanyDashboardPage = () => {
     recentApplications: []
   });
   const [loading, setLoading] = useState(true);
+  const [companyData, setCompanyData] = useState(null);
+  const [isEditingCompany, setIsEditingCompany] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -43,12 +49,12 @@ const CompanyDashboardPage = () => {
 
       try {
         // const companyId = user.companyId;
-        const companyId = user.role === 'company' ? user.id : user.companyId;
+        const compId = user.role === 'company' ? user.id : user.companyId;
         
         // Fetch company data
         const [companyRes, jobsRes, usersRes, applicationsRes] = await Promise.all([
-          fetch(`http://localhost:8000/companies/${companyId}`),
-          fetch(`http://localhost:8000/jobs?companyId=${companyId}`),
+          fetch(`http://localhost:8000/companies/${compId}`),
+          fetch(`http://localhost:8000/jobs?companyId=${compId}`),
           fetch(`http://localhost:8000/users`),
           fetch(`http://localhost:8000/applications`)
         ]);
@@ -60,7 +66,7 @@ const CompanyDashboardPage = () => {
 
         // Filter employees for this company
         const employees = users.filter(u => 
-          String(u.companyId) === String(companyId) && u.role === 'employer'
+          String(u.companyId) === String(compId) && u.role === 'employer'
         );
 
         // Filter applications for company's jobs
@@ -100,8 +106,67 @@ const CompanyDashboardPage = () => {
       setLoading(false);
     };
 
+    const fetchCompanyData = async () => {
+      if (companyId) {
+        try {
+          const response = await fetch(`http://localhost:8000/companies/${companyId}`);
+          if (response.ok) {
+            const company = await response.json();
+            setCompanyData(company);
+            setIsEditingCompany(true); // Set editing mode for company
+          }
+        } catch (error) {
+          console.error('Error fetching company data:', error);
+        }
+      }
+    };
+
     fetchDashboardData();
-  }, [user]);
+    fetchCompanyData();
+  }, [user, companyId]);
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveChanges = async () => {
+    setSaving(true);
+    try {
+      const updatedCompanyData = {
+        ...companyData,
+        ...formData
+      };
+
+      const response = await fetch(`http://localhost:8000/companies/${companyData.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedCompanyData),
+      });
+
+      if (response.ok) {
+        const savedCompany = await response.json();
+        setCompanyData(savedCompany);
+        // Also update the main dashboard data
+        setDashboardData(prev => ({
+          ...prev,
+          company: savedCompany
+        }));
+        alert('Company profile updated successfully!');
+      } else {
+        throw new Error('Failed to update company profile');
+      }
+    } catch (error) {
+      console.error('Error saving company data:', error);
+      alert('Failed to save changes. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -138,6 +203,157 @@ const CompanyDashboardPage = () => {
     );
   }
 
+  if (companyId && companyData) {
+    // Render company profile editing form instead of user profile
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="flex items-center mb-8">
+              <img
+                src={companyData.logo || 'https://placehold.co/100x100?text=Logo'}
+                alt={companyData.name}
+                className="w-24 h-24 rounded-lg object-cover mr-6"
+              />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{companyData.name}</h1>
+                <p className="text-gray-600">{companyData.industry}</p>
+                <p className="text-sm text-gray-500">Company ID: {companyData.id}</p>
+              </div>
+            </div>
+            
+            {/* Company editing form - REPLACE THE EXISTING FORM */}
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.name || companyData.name || ''}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={formData.description || companyData.description || ''}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Industry
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.industry || companyData.industry || ''}
+                    onChange={(e) => handleInputChange('industry', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Company Size
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.companySize || companyData.companySize || ''}
+                    onChange={(e) => handleInputChange('companySize', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Founded Year
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.foundedYear || companyData.foundedYear || ''}
+                    onChange={(e) => handleInputChange('foundedYear', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Headquarters
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.headquarters || companyData.headquarters || ''}
+                    onChange={(e) => handleInputChange('headquarters', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Website
+                </label>
+                <input
+                  type="url"
+                  value={formData.website || companyData.website || ''}
+                  onChange={(e) => handleInputChange('website', e.target.value)}
+                  placeholder="https://example.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Contact Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.contactEmail || companyData.contactEmail || ''}
+                  onChange={(e) => handleInputChange('contactEmail', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              
+              <div className="flex space-x-4">
+                <button 
+                  onClick={handleSaveChanges}
+                  disabled={saving}
+                  className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                >
+                  {saving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+                <Link
+                  to="/company-dashboard"
+                  className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Header Section */}
@@ -163,7 +379,7 @@ const CompanyDashboardPage = () => {
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
               <Link
-                to="/profile"
+                to={`/company-dashboard?companyId=${company.id}`}  // ← CHANGED: Stay on company dashboard
                 className="text-white hover:text-indigo-200 transition-colors flex items-center space-x-2"
               >
                 <FaEdit />
@@ -183,7 +399,7 @@ const CompanyDashboardPage = () => {
               Company Overview
             </h2>
             <Link
-              to="/profile"
+              to={`/company/${company.id}`}  // ← CHANGED: Now goes to company profile instead of /profile
               className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
             >
               <FaEye />
@@ -316,7 +532,7 @@ const CompanyDashboardPage = () => {
             </Link>
 
             <Link
-              to="/profile"
+              to={`/company-dashboard?companyId=${company.id}`}  // ← CHANGED: Stay on company dashboard
               className="bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg p-4 transition-colors group"
             >
               <div className="flex items-center space-x-3">
