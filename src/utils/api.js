@@ -1,16 +1,18 @@
-
 // API utility functions for consistent API handling
 
 const API_BASE = '/api';
 
-// Generic API request handler
+// Strapi Configuration
+
+// Generic API request handler for local server
 const apiRequest = async (url, options = {}) => {
   try {
     const response = await fetch(`${API_BASE}${url}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers:
+        {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
       ...options,
     });
 
@@ -18,7 +20,6 @@ const apiRequest = async (url, options = {}) => {
       throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
 
-    // Check if response has content
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       return await response.json();
@@ -31,7 +32,36 @@ const apiRequest = async (url, options = {}) => {
   }
 };
 
-// Jobs API
+// Strapi API request handler
+const strapiApiRequest = async (url, options = {}) => {
+  try {
+    const response = await fetch(`${STRAPI_API_BASE}${url}`, {
+      headers: {
+        'Authorization': `Bearer ${STRAPI_TOKEN}`,
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Strapi API Error: ${response.status} - ${errorText}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return await response.json();
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Strapi API Request failed:', error);
+    throw error;
+  }
+};
+
+// Jobs API (still uses local server)
 export const jobsAPI = {
   // Get all jobs
   getAll: () => apiRequest('/jobs'),
@@ -63,39 +93,248 @@ export const jobsAPI = {
   }),
 };
 
-// Users API
+// Users API - ONLY STRAPI (NO FALLBACK)
 export const usersAPI = {
-  // Get all users
-  getAll: () => apiRequest('/users'),
+  // Test connection
+  testConnection: async () => {
+    try {
+      const response = await strapiApiRequest('/test1s');
+      return {
+        success: true,
+        count: response.data ? response.data.length : 0,
+        data: response
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+
+  // Get all users from Strapi
+  // getAll: async () => {
+  //   try {
+  //     const response = await strapiApiRequest('/test1s');
+  //     return response.data || [];
+  //   } catch (error) {
+  //     console.error('Failed to fetch users from Strapi:', error);
+  //     throw error; // Don't return empty array, throw error
+  //   }
+  // },
+  getAll: async () => {
+  const res = await strapiApiRequest('/test1s');
+  return res.data || [];
+},
+
   
-  // Get user by ID
-  getById: (id) => apiRequest(`/users/${id}`),
-  
-  // Get user by email
-  getByEmail: async (email) => {
-    const users = await apiRequest('/users');
-    return users.find(user => user.email === email);
+  // Get user by ID from Strapi
+  getById: async (id) => {
+    try {
+      const response = await strapiApiRequest(`/test1s/${id}`);
+      return response.data || response;
+    } catch (error) {
+      console.error(`Failed to fetch user ${id} from Strapi:`, error);
+      return null;
+    }
   },
   
-  // Create new user
-  create: (userData) => apiRequest('/users', {
-    method: 'POST',
-    body: JSON.stringify(userData),
-  }),
+  // Get user by email from Strapi - CHECK userInfo FIELD PROPERLY
+  // getByEmail: async (email) => {
+  //   try {
+  //     console.log('🔍 Searching for user by email in Strapi:', email);
+      
+  //     const response = await strapiApiRequest('/test1s');
+  //     const users = response.data || [];
+      
+  //     console.log('📊 All users from Strapi:', users);
+      
+  //     // Search through users to find matching email
+  //     const foundUser = users.find(user => {
+  //       const userAttributes = user.attributes || {};
+  //       const userInfo = userAttributes.userInfo || {};
+        
+  //       console.log('🔍 Checking user ID', user.id, ':', {
+  //         directEmail: userAttributes.email,
+  //         userInfoEmail: userInfo.email,
+  //         firstName: userAttributes.firstName || userInfo.firstName,
+  //         lastName: userAttributes.lastName || userInfo.lastName,
+  //         hasUserInfo: !!userInfo,
+  //         userInfoKeys: Object.keys(userInfo)
+  //       });
+        
+  //       // Check multiple possible email locations
+  //       return (
+  //         userAttributes.email === email || 
+  //         userInfo.email === email
+  //       );
+  //     });
+      
+  //     console.log('📊 Found user result:', foundUser);
+  //     return foundUser || null;
+      
+  //   } catch (error) {
+  //     console.error(`Failed to fetch user by email ${email} from Strapi:`, error);
+  //     return null;
+  //   }
+  // },
+  getByEmail: async (email) => {
+  const all = await usersAPI.getAll();
   
-  // Update user
-  update: (id, userData) => apiRequest(`/users/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(userData),
-  }),
+  return all.find(u => {
+    const info = u.attributes?.userInfo;
+    return info?.email?.toLowerCase() === email.toLowerCase();
+  }) || null;
+},
+
   
-  // Delete user
-  delete: (id) => apiRequest(`/users/${id}`, {
-    method: 'DELETE',
-  }),
+  // Create new user in Strapi - INCLUDE REQUIRED userInfo FIELD
+  // create: async (userData) => {
+  //   try {
+  //     console.log('🔄 Starting Strapi user creation...');
+  //     console.log('📤 User data to send:', userData);
+      
+  //     // Create data structure with ALL the fields we need + required userInfo
+  //     const strapiUserData = {
+  //       // Core user fields (direct attributes)
+  //       firstName: userData.firstName,
+  //       lastName: userData.lastName,
+  //       name: userData.name || `${userData.firstName} ${userData.lastName}`,
+  //       email: userData.email,
+  //       password: userData.password,
+  //       role: userData.role,
+  //       companyId: userData.companyId || null,
+  //       position: userData.position || null,
+  //       skills: userData.skills || [],
+  //       isActive: true,
+  //       createdAt: new Date().toISOString(),
+  //       profilePhoto: userData.profilePhoto || '',
+  //       resume: userData.resume || '',
+  //       introVideo: userData.introVideo || '',
+  //       companyLogo: userData.companyLogo || '',
+  //       about: userData.about || '',
+  //       savedJobs: userData.savedJobs || [],
+  //       profileStatus: userData.profileStatus || 'draft',
+  //       publishedAt: new Date().toISOString(),
+  //       lastModified: new Date().toISOString(),
+  //       draft: userData.draft || null,
+  //       draftData: userData.draftData || null,
+        
+  //       // REQUIRED userInfo field (Strapi validation requires this)
+  //       userInfo: {
+  //         firstName: userData.firstName,
+  //         lastName: userData.lastName,
+  //         name: userData.name || `${userData.firstName} ${userData.lastName}`,
+  //         email: userData.email,
+  //         role: userData.role,
+  //         skills: userData.skills || [],
+  //         companyId: userData.companyId || null,
+  //         position: userData.position || null,
+  //         isActive: true,
+  //         registeredAt: new Date().toISOString(),
+  //         profilePhoto: userData.profilePhoto || '',
+  //         about: userData.about || '',
+  //         resume: userData.resume || '',
+  //         introVideo: userData.introVideo || '',
+  //         lastLoginAt: null,
+  //         preferences: {
+  //           emailNotifications: true,
+  //           jobAlerts: true,
+  //           profileVisibility: 'public'
+  //         }
+  //       }
+  //     };
+
+  //     console.log('📊 Sending to Strapi with userInfo:', JSON.stringify(strapiUserData, null, 2));
+
+  //     const response = await strapiApiRequest('/test1s', {
+  //       method: 'POST',
+  //       body: JSON.stringify({ data: strapiUserData }),
+  //     });
+      
+  //     console.log('✅ Strapi response:', response);
+  //     return response.data || response;
+  //   } catch (error) {
+  //     console.error('❌ Error creating user in Strapi:', error);
+  //     throw error;
+  //   }
+  // },
+  create: async (userData) => {
+  try {
+    const userInfo = {
+      name: `${userData.firstName} ${userData.lastName}`,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+
+      email: userData.email,
+      password: userData.password, // IMPORTANT ✔
+
+      role: userData.role,
+      skills: userData.skills || [],
+      companyId: userData.companyId || null,
+      position: userData.position || null,
+
+      isActive: true,
+      about: "",
+      resume: "",
+      introVideo: "",
+      profilePhoto: "",
+
+      registeredAt: new Date().toISOString(),
+      lastLoginAt: null,
+
+      preferences: {
+        emailNotifications: true,
+        jobAlerts: true,
+        profileVisibility: "public"
+      }
+    };
+
+    const payload = { data: { userInfo } };
+
+    const response = await strapiApiRequest('/test1s', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("User creation failed:", error);
+    throw error;
+  }
+},
+
+
+  
+  // Update user in Strapi
+  update: async (id, userData) => {
+    try {
+      const response = await strapiApiRequest(`/test1s/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ data: userData }),
+      });
+      return response.data || response;
+    } catch (error) {
+      console.error(`Failed to update user ${id} in Strapi:`, error);
+      throw error;
+    }
+  },
+  
+  // Delete user from Strapi
+  delete: async (id) => {
+    try {
+      await strapiApiRequest(`/test1s/${id}`, {
+        method: 'DELETE',
+      });
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete user ${id} from Strapi:`, error);
+      throw error;
+    }
+  },
 };
 
-// Applications API
+// Applications API (still uses local server)
 export const applicationsAPI = {
   // Get all applications
   getAll: () => apiRequest('/applications'),
@@ -127,7 +366,7 @@ export const applicationsAPI = {
   }),
 };
 
-// Saved Jobs API
+// Saved Jobs API (still uses local server)
 export const savedJobsAPI = {
   // Get all saved jobs
   getAll: () => apiRequest('/savedJobs'),

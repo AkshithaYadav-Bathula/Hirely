@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import SkillsDropdown from '../components/SkillsDropdown';
 import { validateEmail } from '../utils/validateEmail';
+import { usersAPI } from '../utils/api';
 
 const RegisterPage = () => {
   const [emailError, setEmailError] = useState('');
@@ -46,6 +47,12 @@ const RegisterPage = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  // Add useEffect to monitor skills changes
+  useEffect(() => {
+    console.log('👀 Skills state changed:', formData.skills);
+    console.log('👀 Skills type:', typeof formData.skills, Array.isArray(formData.skills));
+  }, [formData.skills]);
+
   // Fetch companies when employer is selected
   useEffect(() => {
     if (accountType === 'user' && formData.role === 'employer') {
@@ -85,15 +92,34 @@ const RegisterPage = () => {
   };
 
   const handleSkillsChange = (skills) => {
-    setFormData({ ...formData, skills: skills });
+    console.log('🎯 Skills selected in handleSkillsChange:', skills);
+    console.log('🎯 Skills type:', typeof skills, Array.isArray(skills));
+    console.log('🎯 Skills length:', skills?.length);
+    console.log('🎯 Raw skills data:', JSON.stringify(skills));
+    
+    setFormData(prev => {
+      const updated = { 
+        ...prev, 
+        skills: Array.isArray(skills) ? skills : [] 
+      };
+      console.log('🔄 Updated formData.skills:', updated.skills);
+      console.log('🔄 Full updated formData:', updated);
+      return updated;
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Add debugging for skills validation
+    console.log('📋 Form data before validation:', formData);
+    console.log('🎯 Selected skills:', formData.skills);
+    console.log('🔢 Skills length:', formData.skills?.length || 0);
+    console.log('🔢 Skills array check:', Array.isArray(formData.skills));
 
     // Validation based on account type
     if (accountType === 'company') {
-      // Company registration validation
+      // Company registration validation (still uses local server)
       if (!validateEmail(formData.companyEmail)) {
         setEmailError('Please enter a valid company email address');
         toast.error('Please enter a valid company email address');
@@ -110,7 +136,7 @@ const RegisterPage = () => {
         return;
       }
 
-      // Check if company email already exists
+      // Check if company email already exists (local server for companies)
       try {
         const res = await fetch('http://localhost:8000/companies');
         const companies = await res.json();
@@ -130,7 +156,7 @@ const RegisterPage = () => {
 
       setLoading(true);
 
-      // Create company
+      // Create company (still uses local server)
       const newCompany = {
         id: `c${Date.now()}`,
         name: formData.companyName,
@@ -179,7 +205,7 @@ const RegisterPage = () => {
       setLoading(false);
 
     } else {
-      // User registration validation
+      // USER REGISTRATION - NOW USES ONLY STRAPI
       if (!validateEmail(formData.email)) {
         setEmailError('Please enter a valid email address');
         toast.error('Please enter a valid email address');
@@ -203,34 +229,54 @@ const RegisterPage = () => {
       }
 
       // For developers, require at least one skill
-      if (formData.role === 'developer' && formData.skills.length === 0) {
-        toast.error('Please select at least one skill');
-        return;
+      if (formData.role === 'developer') {
+        console.log('🔍 Validating developer skills...');
+        console.log('🔍 formData.skills:', formData.skills);
+        console.log('🔍 formData.skills type:', typeof formData.skills);
+        console.log('🔍 formData.skills Array.isArray:', Array.isArray(formData.skills));
+        console.log('🔍 formData.skills length:', formData.skills?.length);
+        
+        const skillsArray = Array.isArray(formData.skills) ? formData.skills : [];
+        console.log('🔍 skillsArray after conversion:', skillsArray);
+        console.log('🔍 skillsArray length:', skillsArray.length);
+        
+        if (skillsArray.length === 0) {
+          console.log('❌ Skills validation failed - no skills selected');
+          toast.error('Please select at least one skill');
+          setLoading(false);
+          return;
+        }
+        
+        console.log('✅ Skills validation passed');
       }
 
       setLoading(true);
 
-      // Check if user email already exists
+      // Check if user email already exists - USE ONLY STRAPI
       try {
-        const res = await fetch('http://localhost:8000/users');
-        const users = await res.json();
-        const emailExists = users.some(
-          u => u.email.toLowerCase() === formData.email.toLowerCase()
-        );
+        console.log('🔍 Checking if email exists in Strapi:', formData.email);
         
-        if (emailExists) {
+        const existingUser = await usersAPI.getByEmail(formData.email);
+        console.log('📊 Existing user check result:', existingUser);
+        
+        if (existingUser) {
+          console.log('❌ Email already exists in Strapi');
           setEmailError('Email already exists');
           toast.error('Email already exists');
           setLoading(false);
           return;
         }
+        
+        console.log('✅ Email is available for registration');
+        
       } catch (err) {
-        toast.error('Could not validate email');
+        console.error('❌ Email validation error:', err);
+        toast.error('Could not validate email with server');
         setLoading(false);
         return;
       }
 
-      // If employer is registering new company
+      // If employer is registering new company (still uses local server for companies)
       let companyId = formData.companyId;
       
       if (formData.role === 'employer' && showNewCompanyForm) {
@@ -282,12 +328,15 @@ const RegisterPage = () => {
         }
       }
 
-      // Register user
+      // Register user - USES STRAPI (via AuthContext)
       const userData = {
         ...formData,
-        companyId: formData.role === 'employer' ? companyId : null
+        companyId: formData.role === 'employer' ? companyId : null,
+        // Ensure skills is always an array
+        skills: Array.isArray(formData.skills) ? formData.skills : []
       };
 
+      console.log('📤 Sending user data to registration:', userData);
       const result = await register(userData);
 
       if (result.success) {
@@ -830,6 +879,259 @@ const RegisterPage = () => {
               </>
             )}
 
+            {/* Debug Info for Developer Role - REMOVE LATER */}
+            {formData.role === 'developer' && (
+              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                <h4 className="text-sm font-medium text-yellow-800">Debug Info:</h4>
+                <div className="text-xs text-yellow-700 mt-2">
+                  <p><strong>Skills State:</strong> {JSON.stringify(formData.skills)}</p>
+                  <p><strong>Skills Length:</strong> {formData.skills?.length || 0}</p>
+                  <p><strong>Is Array:</strong> {Array.isArray(formData.skills).toString()}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      console.log('🧪 Current form state:', formData);
+                      console.log('🧪 Skills specifically:', formData.skills);
+                    }}
+                    className="mt-2 px-3 py-1 bg-yellow-200 text-yellow-800 rounded text-xs"
+                  >
+                    Log Current State
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Manual Test Button - TEMPORARY */}
+            {formData.role === 'developer' && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <h4 className="text-sm font-medium text-blue-800">🧪 Test Skills Function:</h4>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      console.log('🧪 Manually setting skills to Redux...');
+                      const testSkills = ["7"]; // Assuming Redux has ID 7
+                      handleSkillsChange(testSkills);
+                    }}
+                    className="px-3 py-1 bg-blue-500 text-white rounded text-xs"
+                  >
+                    Set Redux Skill
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => {
+                      console.log('🧪 Manually setting multiple skills...');
+                      const testSkills = ["1", "2"]; // JavaScript and React
+                      handleSkillsChange(testSkills);
+                    }}
+                    className="px-3 py-1 bg-green-500 text-white rounded text-xs"
+                  >
+                    Set JS + React
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => {
+                      console.log('🧪 Clearing skills...');
+                      handleSkillsChange([]);
+                    }}
+                    className="px-3 py-1 bg-red-500 text-white rounded text-xs"
+                  >
+                    Clear Skills
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Debug: Check Existing Emails - TEMPORARY */}
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
+              <h4 className="text-sm font-medium text-gray-800">🔍 Debug: Check Existing Emails</h4>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    console.log('🔍 Fetching all users from Strapi...');
+                    const allUsers = await usersAPI.getAll();
+                    console.log('📊 All users in Strapi:', allUsers);
+                    
+                    // const emails = allUsers.map(user => {
+                    //   const userAttributes = user.attributes || user;
+                    //   return userAttributes.email;
+                    // });
+                    const emails = allUsers.map(user => user.attributes?.userInfo?.email);
+
+                    
+                    console.log('📧 All emails in Strapi:', emails);
+                    toast.info(`Found ${emails.length} users in Strapi. Check console for emails.`);
+                    
+                    // Check specific email
+                    const testEmail = formData.email;
+                    if (testEmail) {
+                      console.log(`🔍 Checking specific email: ${testEmail}`);
+                      const existingUser = await usersAPI.getByEmail(testEmail);
+                      console.log('📊 User check result:', existingUser);
+                      
+                      if (existingUser) {
+                        const userAttributes = existingUser.attributes || existingUser;
+                        toast.error(`Email ${testEmail} already exists! User: ${userAttributes.firstName} ${userAttributes.lastName}`);
+                      } else {
+                        toast.success(`Email ${testEmail} is available!`);
+                      }
+                    }
+                    
+                  } catch (error) {
+                    console.error('❌ Error checking emails:', error);
+                    toast.error('Failed to check emails');
+                  }
+                }}
+                className="px-3 py-1 bg-gray-500 text-white rounded text-xs"
+              >
+                Check Existing Emails
+              </button>
+            </div>
+
+            {/* Enhanced Debug: Check Strapi API Structure - TEMPORARY */}
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
+              <h4 className="text-sm font-medium text-gray-800">🔍 Enhanced Debug: Check Strapi Structure</h4>
+              <div className="flex gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      console.log('🔍 Testing direct Strapi API call...');
+                      
+                      // Test direct API call
+                      const response = await fetch('http://3.6.11.114/api/test1s', {
+                        headers: {
+                          'Authorization': `Bearer 9d4865bb56226b5815f3e9cfd52bc377b8eb2fdc2b86f573b75edea4a62a61254ed373945e5dc1a047c4a09c24d91b1d650615a452c1147996f53a690b416bd6f3cdd00b50652c811816d4dc53c58b42a041c956f994877adb54df9d03b8da2ca5c4bf687e86cc843462da733472981932fa511a249a65ee49a5f43fa4077d8e`,
+                        },
+                      });
+                      
+                      const rawData = await response.json();
+                      console.log('📊 Raw Strapi API Response:', rawData);
+                      console.log('📊 Response structure:', {
+                        data: rawData.data,
+                        meta: rawData.meta,
+                        keys: Object.keys(rawData),
+                      });
+                      
+                      if (rawData.data && rawData.data.length > 0) {
+                        console.log('📊 First user structure:', rawData.data[0]);
+                        console.log('📊 First user keys:', Object.keys(rawData.data[0]));
+                        console.log('📊 First user attributes:', rawData.data[0].attributes);
+                      }
+                      
+                      toast.info(`Raw API returned ${rawData.data?.length || 0} users. Check console for structure.`);
+                      
+                    } catch (error) {
+                      console.error('❌ Direct API call failed:', error);
+                      toast.error('Direct API call failed');
+                    }
+                  }}
+                  className="px-3 py-1 bg-blue-500 text-white rounded text-xs"
+                >
+                  Test Direct API
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      console.log('🔍 Testing usersAPI.getAll()...');
+                      const allUsers = await usersAPI.getAll();
+                      console.log('📊 usersAPI.getAll() result:', allUsers);
+                      
+                      if (allUsers && allUsers.length > 0) {
+                        console.log('📊 First user from usersAPI:', allUsers[0]);
+                        console.log('📊 First user keys:', Object.keys(allUsers[0]));
+                      }
+                      
+                      toast.info(`usersAPI returned ${allUsers?.length || 0} users. Check console.`);
+                      
+                    } catch (error) {
+                      console.error('❌ usersAPI.getAll() failed:', error);
+                      toast.error('usersAPI failed');
+                    }
+                  }}
+                  className="px-3 py-1 bg-green-500 text-white rounded text-xs"
+                >
+                  Test usersAPI
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const testEmail = formData.email || 'dev@example.com';
+                    try {
+                      console.log(`🔍 Testing email check for: ${testEmail}`);
+                      
+                      // Test email check
+                      const existingUser = await usersAPI.getByEmail(testEmail);
+                      console.log('📊 Email check result:', existingUser);
+                      
+                      if (existingUser) {
+                        console.log('📊 User found - ID:', existingUser.id);
+                        console.log('📊 User attributes:', existingUser.attributes);
+                        console.log('📊 Full user object keys:', Object.keys(existingUser));
+                        
+                        const userAttributes = existingUser.attributes || existingUser;
+                        console.log('📊 User attributes keys:', Object.keys(userAttributes));
+                        console.log('📊 User email from attributes:', userAttributes.email);
+                        
+                        toast.info(`Found user ${existingUser.id}. Check console for details.`);
+                      } else {
+                        toast.success(`Email ${testEmail} is available!`);
+                      }
+                      
+                    } catch (error) {
+                      console.error('❌ Email check failed:', error);
+                      toast.error('Email check failed');
+                    }
+                  }}
+                  className="px-3 py-1 bg-purple-500 text-white rounded text-xs"
+                >
+                  Test Email Check
+                </button>
+              </div>
+            </div>
+
+            {/* Test userInfo Creation - TEMPORARY */}
+            <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-md">
+              <h4 className="text-sm font-medium text-purple-800">🧪 Test User Creation:</h4>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    console.log('🧪 Testing user creation with required userInfo...');
+                    
+                    const testUser = {
+                      firstName: "TestUser",
+                      lastName: "WithInfo",
+                      email: "testinfo@example.com",
+                      password: "test123",
+                      role: "developer",
+                      skills: ["1", "2"],
+                      isActive: true
+                    };
+                    
+                    console.log('📤 Creating test user with userInfo:', testUser);
+                    const result = await usersAPI.create(testUser);
+                    console.log('✅ Test user with userInfo created:', result);
+                    
+                    toast.success('Test user with userInfo created! Check Strapi.');
+                    
+                  } catch (error) {
+                    console.error('❌ Test user creation failed:', error);
+                    toast.error(`Test failed: ${error.message}`);
+                  }
+                }}
+                className="px-3 py-1 bg-purple-500 text-white rounded text-xs"
+              >
+                Test userInfo Creation
+              </button>
+            </div>
+
             {/* Submit Button */}
             <div>
               <button
@@ -858,7 +1160,7 @@ const RegisterPage = () => {
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300" />
               </div>
-              <div className="relative flex justify-center text-sm">
+              <div className="relative flex justify center text-sm">
                 <span className="px-2 bg-white text-gray-500">
                   Already have an account?
                 </span>

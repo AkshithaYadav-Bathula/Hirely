@@ -320,6 +320,7 @@ const LoginPage = () => {
               </Link>
             </div>
           </div>
+
         </div>
       </div>
     </div>
