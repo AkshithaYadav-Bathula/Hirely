@@ -4,7 +4,6 @@ const API_BASE = '/api';
 
 // Strapi Configuration
 
-// Generic API request handler for local server
 const apiRequest = async (url, options = {}) => {
   try {
     const response = await fetch(`${API_BASE}${url}`, {
@@ -259,15 +258,60 @@ export const usersAPI = {
   //     throw error;
   //   }
   // },
-  create: async (userData) => {
+//   create: async (userData) => {
+//   try {
+//     const userInfo = {
+//       name: `${userData.firstName} ${userData.lastName}`,
+//       firstName: userData.firstName,
+//       lastName: userData.lastName,
+
+//       email: userData.email,
+//       password: userData.password, // IMPORTANT ✔
+
+//       role: userData.role,
+//       skills: userData.skills || [],
+//       companyId: userData.companyId || null,
+//       position: userData.position || null,
+
+//       isActive: true,
+//       about: "",
+//       resume: "",
+//       introVideo: "",
+//       profilePhoto: "",
+
+//       registeredAt: new Date().toISOString(),
+//       lastLoginAt: null,
+
+//       preferences: {
+//         emailNotifications: true,
+//         jobAlerts: true,
+//         profileVisibility: "public"
+//       }
+//     };
+
+//     const payload = { data: { userInfo } };
+
+//     const response = await strapiApiRequest('/test1s', {
+//       method: 'POST',
+//       body: JSON.stringify(payload)
+//     });
+
+//     return response.data;
+//   } catch (error) {
+//     console.error("User creation failed:", error);
+//     throw error;
+//   }
+// },
+create: async (userData) => {
   try {
+    // Build userInfo object
     const userInfo = {
       name: `${userData.firstName} ${userData.lastName}`,
       firstName: userData.firstName,
       lastName: userData.lastName,
 
-      email: userData.email,
-      password: userData.password, // IMPORTANT ✔
+      email: userData.email,      // nested email
+      password: userData.password,
 
       role: userData.role,
       skills: userData.skills || [],
@@ -290,7 +334,13 @@ export const usersAPI = {
       }
     };
 
-    const payload = { data: { userInfo } };
+    // TOP LEVEL email added here ✔
+    const payload = { 
+      data: { 
+        email: userData.email,   // REQUIRED BY STRAPI
+        userInfo: userInfo       // JSON nested data
+      } 
+    };
 
     const response = await strapiApiRequest('/test1s', {
       method: 'POST',
@@ -303,6 +353,7 @@ export const usersAPI = {
     throw error;
   }
 },
+
 
 
   

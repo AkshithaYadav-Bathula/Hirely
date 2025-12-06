@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLoaderData, Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usersAPI } from '../utils/api'; 
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -416,56 +417,125 @@ const ProfilePage = (props) => {
   // ✅ ALL EFFECT HOOKS - keeping all existing effects unchanged
   
   // Company data fetching effect
-  useEffect(() => {
-    if (loader && loader.company) return;
-    if (!effectiveCompanyId) return;
+  // useEffect(() => {
+  //   if (loader && loader.company) return;
+  //   if (!effectiveCompanyId) return;
 
-    const base = 'http://localhost:8000';
-    let cancelled = false;
+  //   const base = 'http://localhost:8000';
+  //   let cancelled = false;
     
-    const fetchCompanyData = async () => {
-      setCompanyLoading(true);
-      try {
-        const [companyRes, jobsRes, usersRes] = await Promise.all([
-          fetch(`${base}/companies/${encodeURIComponent(effectiveCompanyId)}`),
-          fetch(`${base}/jobs?companyId=${encodeURIComponent(effectiveCompanyId)}`),
-          fetch(`${base}/users`)
-        ]);
+  //   const fetchCompanyData = async () => {
+  //     setCompanyLoading(true);
+  //     try {
+  //       const [companyRes, jobsRes, usersRes] = await Promise.all([
+  //         fetch(`${base}/companies/${encodeURIComponent(effectiveCompanyId)}`),
+  //         fetch(`${base}/jobs?companyId=${encodeURIComponent(effectiveCompanyId)}`),
+  //         fetch(`${base}/users`)
+  //       ]);
         
-        if (!companyRes.ok) throw new Error('Company fetch failed');
-        const company = await companyRes.json();
-        const jobs = jobsRes.ok ? await jobsRes.json() : [];
-        const users = usersRes.ok ? await usersRes.json() : [];
+  //       if (!companyRes.ok) throw new Error('Company fetch failed');
+  //       const company = await companyRes.json();
+  //       const jobs = jobsRes.ok ? await jobsRes.json() : [];
+  //       // const users = usersRes.ok ? await usersRes.json() : [];
 
-        const employees = users.filter(u => String(u.companyId) === String(company.id));
+  //       const employees = users.filter(u => String(u.companyId) === String(company.id));
 
-        let apps = [];
-        if (jobs.length > 0) {
-          const qs = jobs.map(j => `jobId=${encodeURIComponent(j.id)}`).join('&');
-          const appsRes = await fetch(`${base}/applications?${qs}`);
-          apps = appsRes.ok ? await appsRes.json() : [];
-        }
+  //       let apps = [];
+  //       if (jobs.length > 0) {
+  //         const qs = jobs.map(j => `jobId=${encodeURIComponent(j.id)}`).join('&');
+  //         const appsRes = await fetch(`${base}/applications?${qs}`);
+  //         apps = appsRes.ok ? await appsRes.json() : [];
+  //       }
         
-        const applicationsByJob = {};
-        apps.forEach(a => {
-          const k = String(a.jobId);
-          if (!applicationsByJob[k]) applicationsByJob[k] = [];
-          applicationsByJob[k].push(a);
-        });
+  //       const applicationsByJob = {};
+  //       apps.forEach(a => {
+  //         const k = String(a.jobId);
+  //         if (!applicationsByJob[k]) applicationsByJob[k] = [];
+  //         applicationsByJob[k].push(a);
+  //       });
 
-        if (!cancelled) {
-          setCompanyFallback({ company, jobs, employees, applicationsByJob });
-        }
-      } catch (err) {
-        console.error('Company fallback load error', err);
-      } finally {
-        if (!cancelled) setCompanyLoading(false);
+  //       if (!cancelled) {
+  //         setCompanyFallback({ company, jobs, employees, applicationsByJob });
+  //       }
+  //     } catch (err) {
+  //       console.error('Company fallback load error', err);
+  //     } finally {
+  //       if (!cancelled) setCompanyLoading(false);
+  //     }
+  //   };
+
+  //   fetchCompanyData();
+  //   return () => { cancelled = true; };
+  // }, [effectiveCompanyId, loader]);
+
+  // Company data fetching effect - FIXED FOR STRAPI
+useEffect(() => {
+  if (loader && loader.company) return;
+  if (!effectiveCompanyId) return;
+
+  const base = 'http://localhost:8000';
+  let cancelled = false;
+  
+  const fetchCompanyData = async () => {
+    setCompanyLoading(true);
+    try {
+      // ✅ Fetch company and jobs from localhost
+      const [companyRes, jobsRes] = await Promise.all([
+        fetch(`${base}/companies/${encodeURIComponent(effectiveCompanyId)}`),
+        fetch(`${base}/jobs?companyId=${encodeURIComponent(effectiveCompanyId)}`)
+      ]);
+      
+      if (!companyRes.ok) throw new Error('Company fetch failed');
+      const company = await companyRes.json();
+      const jobs = jobsRes.ok ? await jobsRes.json() : [];
+
+      // ✅ Fetch users from STRAPI
+      const allUsers = await usersAPI.getAll();
+      const users = allUsers.map(user => {
+        const userInfo = user.attributes?.userInfo || {};
+        return {
+          id: user.id,
+          firstName: userInfo.firstName,
+          lastName: userInfo.lastName,
+          name: userInfo.name,
+          email: userInfo.email,
+          companyId: userInfo.companyId,
+          position: userInfo.position,
+          profilePhoto: userInfo.profilePhoto,
+          role: userInfo.role
+        };
+      });
+
+      const employees = users.filter(u => String(u.companyId) === String(company.id));
+
+      // ✅ Fetch applications from localhost
+      let apps = [];
+      if (jobs.length > 0) {
+        const qs = jobs.map(j => `jobId=${encodeURIComponent(j.id)}`).join('&');
+        const appsRes = await fetch(`${base}/applications?${qs}`);
+        apps = appsRes.ok ? await appsRes.json() : [];
       }
-    };
+      
+      const applicationsByJob = {};
+      apps.forEach(a => {
+        const k = String(a.jobId);
+        if (!applicationsByJob[k]) applicationsByJob[k] = [];
+        applicationsByJob[k].push(a);
+      });
 
-    fetchCompanyData();
-    return () => { cancelled = true; };
-  }, [effectiveCompanyId, loader]);
+      if (!cancelled) {
+        setCompanyFallback({ company, jobs, employees, applicationsByJob });
+      }
+    } catch (err) {
+      console.error('Company fallback load error', err);
+    } finally {
+      if (!cancelled) setCompanyLoading(false);
+    }
+  };
+
+  fetchCompanyData();
+  return () => { cancelled = true; };
+}, [effectiveCompanyId, loader]);
 
   // Load skills effect
   useEffect(() => {
@@ -481,61 +551,127 @@ const ProfilePage = (props) => {
     fetchSkills();
   }, []);
 
-  // Load profile effect
-  useEffect(() => {
-    const loadProfile = async () => {
-      if (!user || availableSkills.length === 0) return;
+  // // Load profile effect
+  // useEffect(() => {
+  //   const loadProfile = async () => {
+  //     if (!user || availableSkills.length === 0) return;
 
-      try {
-        const response = await fetch(`http://localhost:8000/users/${user.id}`);
-        const userData = await response.json();
+  //     try {
+  //       // const response = await fetch(`http://localhost:8000/users/${user.id}`);
+  //       // const userData = await response.json();
+  //       const userData = await usersAPI.getById(user.id);
+  //       const userInfo = userData.attributes?.userInfo || {};
 
-        const hasDraftVersion = userData.draft && Object.keys(userData.draft).length > 0;
-        setHasDraft(hasDraftVersion);
-        setIsDraft(hasDraftVersion);
 
-        if (isEditing && hasDraftVersion) {
-          setProfile({
-            name: userData.draft.name || '',
-            email: user.email,
-            profilePhoto: userData.draft.profilePhoto || '',
-            resume: userData.draft.resume || '',
-            introVideo: userData.draft.introVideo || '',
-            companyLogo: userData.draft.companyLogo || '',
-            about: userData.draft.about || ''
-          });
+  //       const hasDraftVersion = userData.draft && Object.keys(userData.draft).length > 0;
+  //       setHasDraft(hasDraftVersion);
+  //       setIsDraft(hasDraftVersion);
 
-          if (userData.draft.skills) {
-            const draftSkillObjects = availableSkills.filter(skill => 
-              userData.draft.skills.includes(skill.id)
-            );
-            setSelectedSkills(draftSkillObjects);
-          }
-        } else {
-          setProfile({
-            name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
-            email: user.email,
-            profilePhoto: userData.profilePhoto || '',
-            resume: userData.resume || '',
-            introVideo: userData.introVideo || '',
-            companyLogo: userData.companyLogo || '',
-            about: userData.about || ''
-          });
+  //       if (isEditing && hasDraftVersion) {
+  //         setProfile({
+  //           name: userData.draft.name || '',
+  //           email: user.email,
+  //           profilePhoto: userData.draft.profilePhoto || '',
+  //           resume: userData.draft.resume || '',
+  //           introVideo: userData.draft.introVideo || '',
+  //           companyLogo: userData.draft.companyLogo || '',
+  //           about: userData.draft.about || ''
+  //         });
 
-          if (userData.skills) {
-            const userSkillObjects = availableSkills.filter(skill => 
-              userData.skills.includes(skill.id)
-            );
-            setSelectedSkills(userSkillObjects);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading profile:', error);
-      }
-    };
+  //         if (userData.draft.skills) {
+  //           const draftSkillObjects = availableSkills.filter(skill => 
+  //             userData.draft.skills.includes(skill.id)
+  //           );
+  //           setSelectedSkills(draftSkillObjects);
+  //         }
+  //       } else {
+  //         setProfile({
+  //           name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+  //           email: user.email,
+  //           profilePhoto: userData.profilePhoto || '',
+  //           resume: userData.resume || '',
+  //           introVideo: userData.introVideo || '',
+  //           companyLogo: userData.companyLogo || '',
+  //           about: userData.about || ''
+  //         });
+
+  //         if (userData.skills) {
+  //           const userSkillObjects = availableSkills.filter(skill => 
+  //             userData.skills.includes(skill.id)
+  //           );
+  //           setSelectedSkills(userSkillObjects);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error('Error loading profile:', error);
+  //     }
+  //   };
     
-    loadProfile();
-  }, [user, availableSkills, isEditing]);
+  //   loadProfile();
+  // }, [user, availableSkills, isEditing]); working this one
+  // Load profile effect - FIXED FOR STRAPI
+useEffect(() => {
+  const loadProfile = async () => {
+    if (!user || availableSkills.length === 0) return;
+
+    try {
+      // ✅ USE STRAPI API
+      const userData = await usersAPI.getById(user.id);
+      
+      // Extract userInfo from Strapi structure
+      const userInfo = userData.attributes?.userInfo || {};
+      
+      const hasDraftVersion = userInfo.draft && Object.keys(userInfo.draft).length > 0;
+      setHasDraft(hasDraftVersion);
+      setIsDraft(hasDraftVersion);
+
+      if (isEditing && hasDraftVersion) {
+        // Load draft data
+        setProfile({
+          name: userInfo.draft.name || '',
+          email: userInfo.email || user.email,
+          profilePhoto: userInfo.draft.profilePhoto || '',
+          resume: userInfo.draft.resume || '',
+          introVideo: userInfo.draft.introVideo || '',
+          companyLogo: userInfo.draft.companyLogo || '',
+          about: userInfo.draft.about || ''
+        });
+
+        if (userInfo.draft.skills) {
+          const draftSkillObjects = availableSkills.filter(skill => 
+            userInfo.draft.skills.includes(skill.id)
+          );
+          setSelectedSkills(draftSkillObjects);
+        }
+      } else {
+        // Load published data
+        setProfile({
+          name: userInfo.name || `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim(),
+          email: userInfo.email || user.email,
+          profilePhoto: userInfo.profilePhoto || '',
+          resume: userInfo.resume || '',
+          introVideo: userInfo.introVideo || '',
+          companyLogo: userInfo.companyLogo || '',
+          about: userInfo.about || ''
+        });
+
+        if (userInfo.skills) {
+          const userSkillObjects = availableSkills.filter(skill => 
+            userInfo.skills.includes(skill.id)
+          );
+          setSelectedSkills(userSkillObjects);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading profile from Strapi:', error);
+    }
+  };
+  
+  loadProfile();
+}, [user, availableSkills, isEditing]);
+
+
+
 
   // Auto-save effect
   useEffect(() => {
@@ -655,126 +791,285 @@ const ProfilePage = (props) => {
     setUploading(false);
   };
 
-  const handleSaveDraft = async (showSuccessMessage = false) => {
-    setSaving(true);
+  // const handleSaveDraft = async (showSuccessMessage = false) => {
+  //   setSaving(true);
     
-    try {
-      const draftData = {
-        name: profile.name || '',
-        profilePhoto: profile.profilePhoto || '',
-        resume: profile.resume || '',
-        introVideo: profile.introVideo || '',
-        companyLogo: profile.companyLogo || '',
-        about: profile.about || '',
-        skills: selectedSkills.map(skill => skill.id),
-        lastModified: new Date().toISOString()
-      };
+  //   try {
+  //     const draftData = {
+  //       name: profile.name || '',
+  //       profilePhoto: profile.profilePhoto || '',
+  //       resume: profile.resume || '',
+  //       introVideo: profile.introVideo || '',
+  //       companyLogo: profile.companyLogo || '',
+  //       about: profile.about || '',
+  //       skills: selectedSkills.map(skill => skill.id),
+  //       lastModified: new Date().toISOString()
+  //     };
 
-      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draft: draftData })
-      });
+  //     const response = await fetch(`http://localhost:8000/users/${user.id}`, {
+  //       method: 'PATCH',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ draft: draftData })
+  //     });
 
-      if (response.ok) {
-        setHasDraft(true);
-        setIsDraft(true);
-        setHasUnsavedChanges(false);
-        setDraftData(draftData);
-        setLastAutoSaved(new Date().toISOString());
+  //     if (response.ok) {
+  //       setHasDraft(true);
+  //       setIsDraft(true);
+  //       setHasUnsavedChanges(false);
+  //       setDraftData(draftData);
+  //       setLastAutoSaved(new Date().toISOString());
         
-        if (showSuccessMessage) {
-          alert('✅ Draft saved successfully!');
-        }
+  //       if (showSuccessMessage) {
+  //         alert('✅ Draft saved successfully!');
+  //       }
         
-        console.log('✅ Draft saved to jobs.json');
-      } else {
-        throw new Error('Failed to save draft');
+  //       console.log('✅ Draft saved to jobs.json');
+  //     } else {
+  //       throw new Error('Failed to save draft');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error saving draft:', error);
+      
+  //     if (showSuccessMessage) {
+  //       alert('Failed to save draft. Please try again.');
+  //     }
+  //   }
+    
+  //   setSaving(false);
+  // };
+
+const handleSaveDraft = async (showSuccessMessage = false) => {
+  setSaving(true);
+  
+  try {
+    // ✅ GET CURRENT USER DATA FROM STRAPI FIRST
+    const currentUser = await usersAPI.getById(user.id);
+    const currentUserInfo = currentUser.attributes?.userInfo || {};
+    
+    // Prepare draft data
+    const draftData = {
+      name: profile.name || '',
+      profilePhoto: profile.profilePhoto || '',
+      resume: profile.resume || '',
+      introVideo: profile.introVideo || '',
+      companyLogo: profile.companyLogo || '',
+      about: profile.about || '',
+      skills: selectedSkills.map(skill => skill.id),
+      lastModified: new Date().toISOString()
+    };
+
+    // ✅ UPDATE STRAPI WITH MERGED DATA
+    const response = await usersAPI.update(user.id, {
+      userInfo: {
+        ...currentUserInfo,  // Keep all existing fields
+        draft: draftData      // Add/update draft field
       }
-    } catch (error) {
-      console.error('Error saving draft:', error);
+    });
+
+    if (response) {
+      setHasDraft(true);
+      setIsDraft(true);
+      setHasUnsavedChanges(false);
+      setDraftData(draftData);
+      setLastAutoSaved(new Date().toISOString());
       
       if (showSuccessMessage) {
-        alert('Failed to save draft. Please try again.');
+        alert('✅ Draft saved successfully!');
       }
+      
+      console.log('✅ Draft saved to Strapi');
+    } else {
+      throw new Error('Failed to save draft');
     }
+  } catch (error) {
+    console.error('Error saving draft to Strapi:', error);
     
-    setSaving(false);
-  };
+    if (showSuccessMessage) {
+      alert('Failed to save draft. Please try again.');
+    }
+  }
+  
+  setSaving(false);
+}; 
+
+
+  // const handlePublish = async () => {
+  //   if (!window.confirm('Are you sure you want to publish this profile? This will replace your current published version.')) {
+  //     return;
+  //   }
+
+  //   setSaving(true);
+    
+  //   try {
+  //     const publishedData = {
+  //       name: profile.name || '',
+  //       profilePhoto: profile.profilePhoto || '',
+  //       resume: profile.resume || '',
+  //       introVideo: profile.introVideo || '',
+  //       companyLogo: profile.companyLogo || '',
+  //       about: profile.about || '',
+  //       skills: selectedSkills.map(skill => skill.id),
+  //       profileStatus: 'published',
+  //       publishedAt: new Date().toISOString(),
+  //       lastModified: new Date().toISOString(),
+  //       draft: null
+  //     };
+
+  //     // const response = await fetch(`http://localhost:8000/users/${user.id}`, {
+  //     //   method: 'PATCH',
+  //     //   headers: { 'Content-Type': 'application/json' },
+  //     //   body: JSON.stringify(publishedData)
+  //     // });
+  //     const response = await usersAPI.update(user.id, {
+  //       userInfo: publishedData
+  //     });
+
+  //     if (response.ok) {
+  //       const updatedUser = await response.json();
+  //       updateUser(updatedUser);
+  //       setHasDraft(false);
+  //       setIsDraft(false);
+  //       setIsEditing(false);
+  //       setHasUnsavedChanges(false);
+  //       alert('🎉 Profile published successfully!');
+  //       window.location.reload();
+  //     } else {
+  //       throw new Error('Failed to publish profile');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error publishing profile:', error);
+  //     alert('Failed to publish profile');
+  //   }
+    
+  //   setSaving(false);
+  // };
+
 
   const handlePublish = async () => {
-    if (!window.confirm('Are you sure you want to publish this profile? This will replace your current published version.')) {
-      return;
-    }
+  if (!window.confirm('Are you sure you want to publish this profile? This will replace your current published version.')) {
+    return;
+  }
 
-    setSaving(true);
+  setSaving(true);
+  
+  try {
+    // ✅ GET CURRENT USER DATA FROM STRAPI
+    const currentUser = await usersAPI.getById(user.id);
+    const currentUserInfo = currentUser.attributes?.userInfo || {};
     
-    try {
-      const publishedData = {
-        name: profile.name || '',
-        profilePhoto: profile.profilePhoto || '',
-        resume: profile.resume || '',
-        introVideo: profile.introVideo || '',
-        companyLogo: profile.companyLogo || '',
-        about: profile.about || '',
-        skills: selectedSkills.map(skill => skill.id),
-        profileStatus: 'published',
-        publishedAt: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-        draft: null
-      };
+    // Prepare published data (remove draft, update published fields)
+    const publishedData = {
+      ...currentUserInfo,           // Keep all existing fields
+      name: profile.name || '',
+      profilePhoto: profile.profilePhoto || '',
+      resume: profile.resume || '',
+      introVideo: profile.introVideo || '',
+      companyLogo: profile.companyLogo || '',
+      about: profile.about || '',
+      skills: selectedSkills.map(skill => skill.id),
+      profileStatus: 'published',
+      publishedAt: new Date().toISOString(),
+      lastModified: new Date().toISOString(),
+      draft: null                   // Remove draft
+    };
 
-      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(publishedData)
+    // ✅ UPDATE STRAPI
+    const response = await usersAPI.update(user.id, {
+      userInfo: publishedData
+    });
+
+    if (response) {
+      // Update local user context
+      const updatedUserInfo = response.attributes?.userInfo || publishedData;
+      updateUser({
+        ...user,
+        name: updatedUserInfo.name,
+        profilePhoto: updatedUserInfo.profilePhoto,
+        resume: updatedUserInfo.resume,
+        introVideo: updatedUserInfo.introVideo,
+        about: updatedUserInfo.about,
+        skills: updatedUserInfo.skills
       });
-
-      if (response.ok) {
-        const updatedUser = await response.json();
-        updateUser(updatedUser);
-        setHasDraft(false);
-        setIsDraft(false);
-        setIsEditing(false);
-        setHasUnsavedChanges(false);
-        alert('🎉 Profile published successfully!');
-        window.location.reload();
-      } else {
-        throw new Error('Failed to publish profile');
-      }
-    } catch (error) {
-      console.error('Error publishing profile:', error);
-      alert('Failed to publish profile');
+      
+      setHasDraft(false);
+      setIsDraft(false);
+      setIsEditing(false);
+      setHasUnsavedChanges(false);
+      
+      alert('🎉 Profile published successfully!');
+      window.location.reload();
+    } else {
+      throw new Error('Failed to publish profile');
     }
-    
-    setSaving(false);
-  };
+  } catch (error) {
+    console.error('Error publishing profile to Strapi:', error);
+    alert('Failed to publish profile. Please try again.');
+  }
+  
+  setSaving(false);
+}; 
+
+
+  // const handleDiscardDraft = async () => {
+  //   if (!window.confirm('Are you sure you want to discard all draft changes?')) {
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await fetch(`http://localhost:8000/users/${user.id}`, {
+  //       method: 'PATCH',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ draft: null })
+  //     });
+
+  //     if (response.ok) {
+  //       setHasDraft(false);
+  //       setIsDraft(false);
+  //       setIsEditing(false);
+  //       setHasUnsavedChanges(false);
+  //       alert('Draft discarded');
+  //       window.location.reload();
+  //     }
+  //   } catch (error) {
+  //     console.error('Error discarding draft:', error);
+  //     alert('Failed to discard draft');
+  //   }
+  // };
 
   const handleDiscardDraft = async () => {
-    if (!window.confirm('Are you sure you want to discard all draft changes?')) {
-      return;
-    }
+  if (!window.confirm('Are you sure you want to discard all draft changes?')) {
+    return;
+  }
 
-    try {
-      const response = await fetch(`http://localhost:8000/users/${user.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draft: null })
-      });
-
-      if (response.ok) {
-        setHasDraft(false);
-        setIsDraft(false);
-        setIsEditing(false);
-        setHasUnsavedChanges(false);
-        alert('Draft discarded');
-        window.location.reload();
+  try {
+    // ✅ GET CURRENT USER DATA FROM STRAPI
+    const currentUser = await usersAPI.getById(user.id);
+    const currentUserInfo = currentUser.attributes?.userInfo || {};
+    
+    // ✅ UPDATE STRAPI - REMOVE DRAFT FIELD
+    const response = await usersAPI.update(user.id, {
+      userInfo: {
+        ...currentUserInfo,  // Keep all existing fields
+        draft: null          // Remove draft
       }
-    } catch (error) {
-      console.error('Error discarding draft:', error);
-      alert('Failed to discard draft');
+    });
+
+    if (response) {
+      setHasDraft(false);
+      setIsDraft(false);
+      setIsEditing(false);
+      setHasUnsavedChanges(false);
+      
+      alert('✅ Draft discarded successfully!');
+      window.location.reload();
+    } else {
+      throw new Error('Failed to discard draft');
     }
-  };
+  } catch (error) {
+    console.error('Error discarding draft from Strapi:', error);
+    alert('Failed to discard draft. Please try again.');
+  }
+};
 
   const modules = {
     toolbar: [
@@ -1998,7 +2293,7 @@ if (companyData && companyData.company) {
                 }}>
                   💡 Click "Full Screen" button above for better viewing experience
                 </p>
-              </div>
+              </div> 
             </div>
           )}
         </div>
