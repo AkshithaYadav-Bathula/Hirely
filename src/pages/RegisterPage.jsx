@@ -256,6 +256,8 @@ const RegisterPage = () => {
       try {
         console.log('🔍 Checking if email exists in Strapi:', formData.email);
         
+        // const existingUser = await usersAPI.getByEmail(formData.email);
+        // In RegisterPage.jsx - Line ~189
         const existingUser = await usersAPI.getByEmail(formData.email);
         console.log('📊 Existing user check result:', existingUser);
         
