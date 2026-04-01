@@ -34,6 +34,7 @@ Frontend
 Backend
 - Django
 - Django REST Framework
+- JSON Mock Server
 
 Cloud Storage
 - AWS S3
